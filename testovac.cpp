@@ -29,7 +29,7 @@
 #include <ctime>
 #include <time.h>
 #include <math.h>
-#include <limits.h>
+#include <ctype.h>
 #include <algorithm>
 
 #define BUFSIZE 1024
@@ -70,6 +70,7 @@ typedef struct params
 	float t, i, w;
 	int portUdp, listenUdp;
 	float rtt;
+	int error;
 } paramStruct;
 
 
@@ -101,7 +102,7 @@ void printParameters(paramStruct p)
 paramStruct paramGet(int argc, char *argv[])
 {
 	//FUJ, tohle jeste upravit nejak rozumne
-    paramStruct actualParameters = {0, 0, 0, 56, 300, 100, 2, 0, 0, 0};
+    paramStruct actualParameters = {0, 0, 0, 56, 300, 100, 2, 0, 0, 0, 0};
     if(argc==2 && !(strcmp(argv[1],"-h")))
         {
 	    actualParameters.help=true;
@@ -122,13 +123,42 @@ paramStruct paramGet(int argc, char *argv[])
 		actualParameters.verbose=true;
 	    else if(!(strcmp(argv[i],"-s")))
 	    {
-	    	actualParameters.dataSize=atoi(argv[i+1]);
-	    	i++;
+	    	if(i+1 < argc)
+			{
+				if(isdigit(argv[i+1]))
+				{
+					actualParameters.dataSize=atoi(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use integer value with argument -t" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use int value with argument -s" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else if(!(strcmp(argv[i],"-t")))
 	    {
-	    	actualParameters.t=atof(argv[i+1]);
-	    	i++;
+			if(i+1 < argc)
+			{
+				actualParameters.t=atof(argv[i+1]);
+	    		i++;
+			}
+	    	else
+			{
+				cout << "Error: use value with argument -t" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
+				
+
 	    }
 	    else if(!(strcmp(argv[i],"-i")))
 		{
@@ -392,6 +422,8 @@ int main(int argc, char *argv[])
 {
 
     paramStruct parameters = paramGet(argc, argv);
+	if(parameters.error==1)
+		return -1;
     if(parameters.help)
     {
     	cout << HelpMsg;
