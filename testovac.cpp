@@ -503,18 +503,19 @@ int doPing(paramStruct parameters, int nodeNumber)
     			tm_info = localtime(&curTimer);
     			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
+				gettimeofday(&konec,0);
+    			cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
+    	
+				timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
+				rtts.push_back(timer/1000);
+
 				if(parameters.verbose)
 				{
-					gettimeofday(&konec,0);
-    				cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
-    	
-					timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
         			cout << " "<< lenght << " bytes from "
             			<< nodes[nodeNumber].c_str()
             			<< " (" << addrString << ")"
             			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
-					rtts.push_back(timer/1000);
-        		}
+				}
     		}
     		else
 				;
