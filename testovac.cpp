@@ -333,10 +333,12 @@ int doPing(paramStruct parameters, int nodeNumber)
 			if(loss==100.0)
 			{
 				cout << "status down" << endl;
-			}
-		    cout << std::fixed << std::setprecision(0) << loss
+			} else
+			{
+				cout << std::fixed << std::setprecision(0) << loss
 				<< "% packet loss, rtt min/avg/max/mdev "
 				<< "4.845/4.882/4.912/0.063" << " ms" << endl;
+			}
 		    gettimeofday(&outputTimer,0);
 		}
     	usleep(parameters.i*1000);
