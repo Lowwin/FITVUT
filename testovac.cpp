@@ -201,13 +201,20 @@ u_short checksum(u_short *addr, int len)
 
 std::string getStatistics(vector<float> &rtts)
 {
-	auto minIt = *std::min_element(rtts.begin(), rtts.end());
-	auto maxIt = *std::max_element(rtts.begin(), rtts.end());
+	float min = inf;
+	float max = -inf;
+	for(int i=0;i<rtts.size();i++)
+    {
+        if(rtts[i]<min)
+        	min=rtts[i];
+		if(rtts[i]>max)
+			max=rtts[i];
+    }
 
-	std::string ret = "";
-	ret += to_string(minIt);
+	std::ostringstream ret;
+	ret << min << "/" << "avg" << "/" << max << "" << "mdev";
 	
-	return ret;
+	return std::string s(ret.str());
 }
 
 /*
