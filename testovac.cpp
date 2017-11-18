@@ -29,6 +29,7 @@
 #include <ctime>
 #include <time.h>
 #include <math.h>
+#include <limits.h>
 #include <algorithm>
 
 #define BUFSIZE 1024
@@ -215,7 +216,7 @@ std::string getStatistics(vector<float> &rtts)
 	std::ostringstream ret;
 	ret << min << "/" << "avg" << "/" << max << "" << "mdev";
 	
-	return std::string s(ret.str());
+	return ret.str();
 }
 
 /*
