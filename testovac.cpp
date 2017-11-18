@@ -94,6 +94,50 @@ void printParameters(paramStruct p)
   		cout << "    Node " << i+1 << ": " << nodes[i] <<endl;
 }
 
+bool isInt(char *str)
+{
+	int stringLen = strlen(str);
+    int i = 0;
+	bool returnVal = true;
+
+    while(i < stringLen)
+    {
+        if(!isdigit(str[i]))
+        {
+            returnVal = false;
+            break;
+        }
+        i++;
+    }
+    return returnVal;
+}
+
+bool isNumber(char *str)
+{
+	int stringLen = strlen(str);
+    int i = 0;
+	int dotCount=0;
+	bool returnVal = true;
+
+    while(i < stringLen)
+    {
+        if(!isdigit(str[i]))
+        {
+			if(str[i]=="." && dotCount<1)
+			{
+				dotCount++;
+			}
+			else
+            {
+				returnVal = false;
+            	break;
+			}
+        }
+        i++;
+    }
+    return returnVal;
+}
+
 /*
 **Agruments parsing
 **Stores nodes in vector
@@ -125,7 +169,7 @@ paramStruct paramGet(int argc, char *argv[])
 	    {
 	    	if(i+1 < argc)
 			{
-				if(isdigit(argv[i+1]))
+				if(isInt(argv[i+1]))
 				{
 					actualParameters.dataSize=atoi(argv[i+1]);
 	    			i++;
@@ -148,8 +192,17 @@ paramStruct paramGet(int argc, char *argv[])
 	    {
 			if(i+1 < argc)
 			{
-				actualParameters.t=atof(argv[i+1]);
-	    		i++;
+				if(isNumber(argv[i+1]))
+				{
+					actualParameters.t=atof(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use value with argument -t" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
 			}
 	    	else
 			{
@@ -157,33 +210,121 @@ paramStruct paramGet(int argc, char *argv[])
 				actualParameters.error=1;
 				return actualParameters;
 			}
-				
-
 	    }
 	    else if(!(strcmp(argv[i],"-i")))
-		{
-	    	actualParameters.i=atof(argv[i+1]);
-	    	i++;
+	    {
+			if(i+1 < argc)
+			{
+				if(isNumber(argv[i+1]))
+				{
+					actualParameters.i=atof(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use value with argument -i" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use value with argument -i" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else if(!(strcmp(argv[i],"-w")))
-		{
-	    	actualParameters.w=atof(argv[i+1]);
-	    	i++;
+	    {
+			if(i+1 < argc)
+			{
+				if(isNumber(argv[i+1]))
+				{
+					actualParameters.w=atof(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use value with argument -w" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use value with argument -w" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else if(!(strcmp(argv[i],"-p")))
-		{
-	    	actualParameters.portUdp=atoi(argv[i+1]);
-	    	i++;
+	    {
+			if(i+1 < argc)
+			{
+				if(isInt(argv[i+1]))
+				{
+					actualParameters.portUdp=atoi(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use int value with argument -p" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use int value with argument -p" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else if(!(strcmp(argv[i],"-l")))
-		{
-	    	actualParameters.listenUdp=atoi(argv[i+1]);
-	    	i++;
+	    {
+			if(i+1 < argc)
+			{
+				if(isInt(argv[i+1]))
+				{
+					actualParameters.listenUdp=atoi(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use int value with argument -tl" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use int value with argument -l" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else if(!(strcmp(argv[i],"-r")))
-		{
-	    	actualParameters.rtt=atof(argv[i+1]);
-	    	i++;
+	    {
+			if(i+1 < argc)
+			{
+				if(isNumber(argv[i+1]))
+				{
+					actualParameters.rtt=atof(argv[i+1]);
+	    			i++;
+				}
+				else
+				{
+					cout << "Error: use value with argument -r" << endl;
+					actualParameters.error=1;
+					return actualParameters;
+				}
+			}
+	    	else
+			{
+				cout << "Error: use value with argument -r" << endl;
+				actualParameters.error=1;
+				return actualParameters;
+			}
 	    }
 	    else
 	    	{
