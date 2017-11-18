@@ -203,8 +203,8 @@ u_short checksum(u_short *addr, int len)
 
 std::string getStatistics(vector<float> &rtts)
 {
-	float min = inf;
-	float max = -inf;
+	float min = 10000000.0;
+	float max = -10000000.0;
 	for(int i=0;i<rtts.size();i++)
     {
         if(rtts[i]<min)
