@@ -205,6 +205,7 @@ u_short checksum(u_short *addr, int len)
 */
 int doPing(paramStruct parameters, int nodeNumber)
 {
+	int sentPackets = 0;
 	int okPackets = 0;
 	int latePackets = 0;
 	int lostPackets = 0;	
@@ -263,6 +264,7 @@ int doPing(paramStruct parameters, int nodeNumber)
         (char *)icmp, sizeof(icmphdr), 0,
         (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
+	sentPackets++;
     gettimeofday(&start,0);
     tv.tv_sec = 5;
     tv.tv_usec = 0;
@@ -288,7 +290,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
-
+				okPackets++;
         		addrString =
             	strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
@@ -313,7 +315,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     	}
     	else
     	{
-    		cout << "Čas vypršel" << endl;
+    		cout << "Timeout" << endl;
     		break;
     	}
 
@@ -324,10 +326,12 @@ int doPing(paramStruct parameters, int nodeNumber)
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+			int loss =(sentPackets-okPackets)/(sentPackets/100);
 
 		    cout << "Print RTT stats!" <<endl;
 		    cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000);
-		    cout << " " << nodes[nodeNumber] <<": 0% packet loss, rtt min/avg/max/mdev 4.845/4.882/4.912/0.063 ms" << endl;
+		    cout << " " << nodes[nodeNumber] <<": " << loss << "% packet loss, rtt min/avg/max/mdev "
+				<< "4.845/4.882/4.912/0.063" << " ms" << endl;
 		    gettimeofday(&outputTimer,0);
 		}
     	usleep(parameters.i*1000);
