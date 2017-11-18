@@ -223,7 +223,10 @@ std::string getStatistics(vector<float> &rtts)
 	mdev = sqrt(smean-(mean*mean));
 
 	std::ostringstream ret;
-	ret << min << "/" << avg << "/" << max << "" << mdev;
+	ret << std::fixed << std::setprecision(3) << min << "/" 
+	<< std::fixed << std::setprecision(3) << avg << "/" 
+	<< std::fixed << std::setprecision(3) << max << "/"
+	<< std::fixed << std::setprecision(3) << mdev;
 	
 	return ret.str();
 }
