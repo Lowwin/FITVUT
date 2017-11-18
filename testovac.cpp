@@ -205,10 +205,10 @@ u_short checksum(u_short *addr, int len)
 */
 int doPing(paramStruct parameters, int nodeNumber)
 {
-	int sentPackets = 0;
-	int okPackets = 0;
-	int latePackets = 0;
-	int lostPackets = 0;	
+	float sentPackets = 0;
+	float okPackets = 0;
+	float latePackets = 0;
+	float lostPackets = 0;	
 	socklen_t size;
 	hostent *host;
 	icmphdr *icmp, *icmpRecv;
