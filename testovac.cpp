@@ -201,11 +201,14 @@ u_short checksum(u_short *addr, int len)
 
 std::string getStatistics(vector<float> &rtts)
 {
-	vector<float>::iterator min, max;
-	min = std::min_element(rtts.begin(), rtts.end());
-	max = std::max_element(rtts.begin(), rtts.end());
+	vector<float>::iterator minIt, maxIt;
+	minIt = std::min_element(rtts.begin(), rtts.end());
+	maxIt = std::max_element(rtts.begin(), rtts.end());
 
-	//cout << min;
+	std::string ret = "";
+	ret += minIt;
+	
+	return ret;
 }
 
 /*
