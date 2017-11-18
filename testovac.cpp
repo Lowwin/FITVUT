@@ -311,10 +311,12 @@ int doPing(paramStruct parameters, int nodeNumber)
         		}
     		}
     		else
+				;
       			//cout << "NOP. Did not do." << endl;
     	}
     	else
     	{
+			;
     		//cout << "Timeout" << endl;
     	}
 
