@@ -31,6 +31,7 @@
 #include <math.h>
 #include <ctype.h>
 #include <algorithm>
+#include <thread>
 
 #define BUFSIZE 1024
 
@@ -561,7 +562,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 int main(int argc, char *argv[])
 {
-
+	vector<std::thread> threads;
+	cout << "Parent PID: " << getpid() << endl;
     paramStruct parameters = paramGet(argc, argv);
 	if(parameters.error==1)
 		return -1;
@@ -577,11 +579,14 @@ int main(int argc, char *argv[])
     if(parameters.udp)
     	cout << "Well, not gonna use that silly UDP, but thanks.\n";
 
-    for(int nodeCounter = 0; nodeCounter<nodes.size();nodeCounter++)
+    for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
-    	doPing(parameters, nodeCounter);
+		threads.push_back(std::thread(doPing, parameters, nodeCounter));
+    	//doPing(parameters, nodeCounter);
     }
     
+	for (std::thread& t : threads)
+    	t.join();
 
     
     cout << "--------------DEBUG--------------" << endl;
