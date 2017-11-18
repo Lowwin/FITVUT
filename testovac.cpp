@@ -316,7 +316,6 @@ int doPing(paramStruct parameters, int nodeNumber)
     	else
     	{
     		cout << "Timeout" << endl;
-    		break;
     	}
 
     	//Print statistics, if time is correct
