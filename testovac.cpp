@@ -311,11 +311,11 @@ int doPing(paramStruct parameters, int nodeNumber)
         		}
     		}
     		else
-      			cout << "NOP. Did not do." << endl;
+      			//cout << "NOP. Did not do." << endl;
     	}
     	else
     	{
-    		cout << "Timeout" << endl;
+    		//cout << "Timeout" << endl;
     	}
 
     	//Print statistics, if time is correct
