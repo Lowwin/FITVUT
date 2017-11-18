@@ -326,7 +326,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-			int loss =(sentPackets-okPackets)/(sentPackets/100);
+			float loss =(sentPackets-okPackets)/(sentPackets/100);
 
 		    cout << "Print RTT stats!" <<endl;
 		    cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000);
