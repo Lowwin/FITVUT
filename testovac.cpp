@@ -199,6 +199,14 @@ u_short checksum(u_short *addr, int len)
 	return (answer);
 }
 
+std::string getStatistics(vector<float> &rtts)
+{
+	vector<float>::iterator min, max;
+	min = std::min_element(rtts.begin(), rtts.end());
+	max = std::max_element(rtts.begin(), rtts.end());
+
+	cout << min;
+}
 
 /*
 **Sends packets to addresses
@@ -227,6 +235,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct tm* tm_info;
 	struct timeval start, konec;
 	double timer;
+	vector<float> rtts;
 
 	struct timeval outputTimer, checkTimer;
 
@@ -307,7 +316,8 @@ int doPing(paramStruct parameters, int nodeNumber)
         			cout << " "<< lenght << " bytes from "
             			<< nodes[nodeNumber].c_str()
             			<< " (" << addrString << ")"
-            			<< " time=" << timer/1000 << " ms" << endl;
+            			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
+					rtts.push_back(timer/1000);
         		}
     		}
     		else
@@ -337,9 +347,10 @@ int doPing(paramStruct parameters, int nodeNumber)
 				cout << "status down" << endl;
 			} else
 			{
+				std::string statistics = getStatistics(rtts);
 				cout << std::fixed << std::setprecision(0) << loss
 				<< "% packet loss, rtt min/avg/max/mdev "
-				<< "4.845/4.882/4.912/0.063" << " ms" << endl;
+				<< statistics << " ms" << endl;
 			}
 		    gettimeofday(&outputTimer,0);
 		}
