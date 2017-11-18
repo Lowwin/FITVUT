@@ -28,7 +28,7 @@
 #include <ctime>
 #include <time.h>
 #include <math.h>
-
+#include <algorithm>
 
 #define BUFSIZE 1024
 
