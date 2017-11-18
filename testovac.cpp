@@ -495,6 +495,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
 				okPackets++;
+				cout << "OK: " << okPackets <<endl;
         		addrString =
             	strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
