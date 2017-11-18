@@ -205,7 +205,7 @@ std::string getStatistics(vector<float> &rtts)
 	min = std::min_element(rtts.begin(), rtts.end());
 	max = std::max_element(rtts.begin(), rtts.end());
 
-	cout << min;
+	//cout << min;
 }
 
 /*
