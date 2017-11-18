@@ -123,7 +123,7 @@ bool isNumber(char *str)
     {
         if(!isdigit(str[i]))
         {
-			if(str[i]=="." && dotCount<1)
+			if((str[i] == '.') && dotCount<1)
 			{
 				dotCount++;
 			}
