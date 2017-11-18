@@ -321,20 +321,20 @@ int doPing(paramStruct parameters, int nodeNumber)
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
-		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=10)
+		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=3)
 		{
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
 			float lossTop =(sentPackets-okPackets);
-			cout << "Sent: " << sentPackets;
+			cout << "lossTop: " << lossTop;
 			float lossBot = (sentPackets/100);
-			cout << " OK: " << okPackets << endl;
+			cout << " lossBot: " << lossBot << endl;
 
 		    cout << "Print RTT stats!" <<endl;
 			 
-		    //cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000);
+		    cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000);
 		    cout << " " << nodes[nodeNumber] <<": " << "NIC"
 				<< "% packet loss, rtt min/avg/max/mdev "
 				<< "4.845/4.882/4.912/0.063" << " ms" << endl;
