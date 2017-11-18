@@ -205,16 +205,25 @@ std::string getStatistics(vector<float> &rtts)
 {
 	float min = 10000000.0;
 	float max = -10000000.0;
+	float sum = 0;
+	float sum2 = 0;
+	float mean, smean, mdev;
 	for(int i=0;i<rtts.size();i++)
     {
         if(rtts[i]<min)
         	min=rtts[i];
 		if(rtts[i]>max)
 			max=rtts[i];
+		sum += rtts[i];
+		sum2 += rtts[i]*rtts[i];
     }
+	float avg = sum/rtts.size();
+	mean = sum/rtts.size();
+	smean = sum2/rtts.size();
+	mdev = sqrt(smean-(mean*mean));
 
 	std::ostringstream ret;
-	ret << min << "/" << "avg" << "/" << max << "" << "mdev";
+	ret << min << "/" << avg << "/" << max << "" << mdev;
 	
 	return ret.str();
 }
