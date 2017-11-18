@@ -377,6 +377,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 			}
 		    gettimeofday(&outputTimer,0);
 			rtts.clear();
+			okPackets=0;
+			sentPackets=0;
 		}
     	usleep(parameters.i*1000);
 	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.sequence == p)));
