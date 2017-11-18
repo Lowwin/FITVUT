@@ -326,6 +326,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
 			float lossTop =(sentPackets-okPackets);
 			cout << "Sent: " << sentPackets;
 			float lossBot = (sentPackets/100);
@@ -334,7 +335,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 		    cout << "Print RTT stats!" <<endl;
 			 
 		    //cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000);
-		    cout << " " << nodes[nodeNumber] <<": " << (sentPackets-okPackets)/(sentPackets/100)
+		    cout << " " << nodes[nodeNumber] <<": " << "NIC"
 				<< "% packet loss, rtt min/avg/max/mdev "
 				<< "4.845/4.882/4.912/0.063" << " ms" << endl;
 		    gettimeofday(&outputTimer,0);
