@@ -282,7 +282,7 @@ int doPing(paramStruct parameters, int nodeNumber)
                (sockaddr *)&receiveSockAddr,
                &size)) <= 0)
             {
-            	cerr << "Problém při přijímáni dat" << endl;
+            	cerr << "Error when accepting data." << endl;
             }
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
