@@ -416,6 +416,73 @@ std::string getStatistics(int nodeNumber)
 	return ret.str();
 }
 
+int tOutput(int nodeNumber)
+{
+	time_t curTimer;
+	struct timeval checkTimer;
+	struct tm* tm_info;
+	char timeBuffer[26];
+
+	gettimeofday(&checkTimer,0);
+
+	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
+	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
+	{
+		time(&curTimer);
+		tm_info = localtime(&curTimer);
+		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
+		cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+			<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+		if(lrint(loss)>=100.0)
+		{
+			cout << "status down" << endl;
+		}
+		else
+		{
+			cout << std::fixed << std::setprecision(3) << loss
+				<< "% packet loss, " << std::fixed << std::setprecision(0) 
+				<< nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
+				<< " packet lost" << endl;
+		}
+	}
+	nodes[nodeNumber].tOk=0;
+	nodes[nodeNumber].tSent=0;
+}
+
+int hourOutput(int nodeNumber)
+{
+	time_t curTimer;
+	struct timeval checkTimer;
+	struct tm* tm_info;
+	char timeBuffer[26];
+	
+	gettimeofday(&checkTimer,0);
+	
+	time(&curTimer);
+    tm_info = localtime(&curTimer);
+    strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
+	cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+		<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+	if(lrint(loss)>=100.0)
+	{
+		cout << "status down" << endl;
+	}
+	else
+	{
+		std::string statistics = getStatistics(nodeNumber);
+		cout << std::fixed << std::setprecision(0) << loss
+			<< "% packet loss, rtt min/avg/max/mdev "
+			<< statistics << " ms" << endl;
+	}
+	nodes[nodeNumber].rtts.clear();
+	nodes[nodeNumber].hourOk=0;
+	nodes[nodeNumber].hourSent=0;
+}
+
 /*
 **Sends packets to addresses
 */
@@ -575,7 +642,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     	gettimeofday(&checkTimer, 0);
 		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
 			tOutput(nodeNumber); 
-		if(if ((checkTimer.tv_sec-hourOTimer.tv_sec)>=5))
+		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
 		 	hourOutput(nodeNumber);
 		
 		if(((parameters.i*1000) - (timer/1000))>0)
@@ -585,63 +652,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 	close(sock);
 	free(icmp);
 	return 0;
-}
-
-int tOutput(int nodeNumber)
-{
-	time_t curTimer;
-	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
-	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
-	{
-		time(&curTimer);
-		tm_info = localtime(&curTimer);
-		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
-		cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-			<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-		if(lrint(loss)>=100.0)
-		{
-			cout << "status down" << endl;
-		}
-		else
-		{
-			cout << std::fixed << std::setprecision(3) << loss
-				<< "% packet loss, " << std::fixed << std::setprecision(0) 
-				<< nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
-				<< " packet lost" << endl;
-		}
-	}
-	nodes[nodeNumber].tOk=0;
-	nodes[nodeNumber].tSent=0;
-	gettimeofday(&tOTimer,0);
-}
-
-int hourOutput(int nodeNumber)
-{
-	time_t curTimer;
-	time(&curTimer);
-    tm_info = localtime(&curTimer);
-    strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
-	cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-		<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-	if(lrint(loss)>=100.0)
-	{
-		cout << "status down" << endl;
-	}
-	else
-	{
-		std::string statistics = getStatistics(nodeNumber);
-		cout << std::fixed << std::setprecision(0) << loss
-			<< "% packet loss, rtt min/avg/max/mdev "
-			<< statistics << " ms" << endl;
-	}
-	gettimeofday(&hourOTimer,0);
-	nodes[nodeNumber].rtts.clear();
-	nodes[nodeNumber].hourOk=0;
-	nodes[nodeNumber].hourSent=0;
 }
 
 int main(int argc, char *argv[])
