@@ -492,7 +492,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 		bufPointer++;
 	}
 
-    icmp->checksum = checksum((u_short *)icmp, sizeof(icmphdr)+sizeof(str)-1);
+    icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
     if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
