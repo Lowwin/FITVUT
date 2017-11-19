@@ -441,7 +441,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct tm* tm_info;
 	struct timeval start, konec;
 	double timer;
-	int datasize = parameters.dataSize - sizeof(icmphdr);
+	int datasize = parameters.dataSize - sizeof(icmphdr) - sizeof(iphdr);
 
 	struct timeval outputTimer, checkTimer;
 
