@@ -535,7 +535,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 			float loss =(sentPackets-okPackets)/(sentPackets/100);
 			 
-		    cout << timeBuffer << "." << lrint(checkTimer.tv_usec/10000)<< " " << nodes[nodeNumber] <<": ";
+		    cout << timeBuffer << "." << std::fixed << std::setprecision(2) << lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber] <<": ";
 
 			if(loss==100.0)
 			{
