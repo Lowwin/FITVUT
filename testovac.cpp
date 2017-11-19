@@ -533,13 +533,15 @@ int doPing(paramStruct parameters, int nodeNumber)
 			cout << "Got data: ";
 			for(int i=0; i<sizeof(buffer); i++)
 			{
-				if(i<16)
-					recvTime[i] = buffer[i];
 				cout << buffer[i];
 			}
 			cout << "  of size: "<< sizeof(buffer) << endl;
 
-			struct timeval rTime = (const timeval *)recvTime;
+			char *bufTimePointer = buffer;
+			bufTimePointer+=28;
+			memcpy(recvTime,bufTimePointer,sizeof(timeval));
+
+			struct timeval rTime = (timeval &)recvTime;
 			cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
