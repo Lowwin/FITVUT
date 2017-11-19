@@ -475,7 +475,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	cout << "Size sec: " << sizeof(send.tv_sec) << " usec: " << sizeof(send.tv_usec) << endl;
 	char icmpBuffer[65000];
 	char *bufPointer = icmpBuffer;
-	char str[datasize];
+	char str[datasize-16];
 	const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
     for (int i = 0; i < datasize; ++i)
@@ -483,7 +483,8 @@ int doPing(paramStruct parameters, int nodeNumber)
         str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
 	cout << str << endl;
-	gettimeofday((timeval*)str,0);
+	char timestampBuf[16];
+	gettimeofday((timeval*)timestampBuf,0);
 	icmp = (icmphdr *) icmpBuffer;
 	icmp->type = ICMP_ECHO;
 	icmp->code = 0;
@@ -491,7 +492,11 @@ int doPing(paramStruct parameters, int nodeNumber)
 	icmp->checksum = 0;
     icmp->un.echo.sequence = 0;
 	bufPointer+= sizeof(icmp);
-
+	for (int i=0; i<16;i++)
+	{
+		*bufPointer = timestampBuf[i];
+		bufPointer++;
+	}
 	for (int counter=0; counter<strlen(str);counter++)
 	{
 		*bufPointer = str[counter];
