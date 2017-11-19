@@ -470,20 +470,22 @@ int doPing(paramStruct parameters, int nodeNumber)
 	{
 	timer =0;
     
-	gettimeofday(&send,0);
+	
 	cout << "Send time: " << send.tv_sec << "." << send.tv_usec <<endl;
 	cout << "Size sec: " << sizeof(send.tv_sec) << " usec: " << sizeof(send.tv_usec) << endl;
 	cout << "Whloe structure: " << send << " size: " << sizeof(send) << endl;
+	char timestampBuffer[16]
+
 	char icmpBuffer[65000];
 	char *bufPointer = icmpBuffer;
 	char str[datasize];
 	const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
-	
+
     for (int i = 0; i < datasize; ++i)
 	{
         str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-	gettimeofday(&start,0);
+	gettimeofday((timeval*)str,0);
 	icmp = (icmphdr *) icmpBuffer;
 	icmp->type = ICMP_ECHO;
 	icmp->code = 0;
