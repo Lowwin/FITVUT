@@ -539,7 +539,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			}
 			cout << "  of size: "<< sizeof(buffer) << endl;
 
-			struct timeval rTime = (timeval&)recvTime;
+			struct timeval rTime = (const timeval *)recvTime;
 			cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
