@@ -441,6 +441,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct tm* tm_info;
 	struct timeval start, konec;
 	double timer;
+	int datasize = parameters.dataSize;
 
 	struct timeval outputTimer, checkTimer;
 
@@ -459,11 +460,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	}
 	ttl = 255;
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
-	icmp = (icmphdr *)malloc(sizeof(icmphdr)+56);
-	icmp->type = ICMP_ECHO;
-	icmp->code = 0;
-	icmp->un.echo.id = pid;
-
+	
 	sendSockAddr.sin_family = AF_INET;
 	sendSockAddr.sin_port = 0;
 	memcpy(&sendSockAddr.sin_addr, host->h_addr, host->h_length);
@@ -471,9 +468,31 @@ int doPing(paramStruct parameters, int nodeNumber)
 	while (1)
 	{
 	timer =0;
-    icmp->checksum = 0;
-    //icmp->un.echo.sequence = p;
-    icmp->checksum = checksum((u_short *)icmp, sizeof(icmphdr));
+    
+
+	char icmpBuffer[65000];
+	char *bufPointer = icmpBuffer;
+	char str[datasize];
+	const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
+    for (int i = 0; i < datasize; ++i)
+	{
+        str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+	icmp = (icmphdr *) icmpBuffer;
+	icmp->type = ICMP_ECHO;
+	icmp->code = 0;
+	icmp->un.echo.id = pid;
+	icmp->checksum = 0;
+    icmp->un.echo.sequence = 0;
+	bufPointer+= sizeof(icmp);
+
+	for (int counter=0; counter<strlen(str);counter++)
+	{
+		*bufPointer = str[counter];
+		bufPointer++;
+	}
+
+    icmp->checksum = checksum((u_short *)icmp, sizeof(icmpBuffer));
     if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
@@ -566,7 +585,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 int main(int argc, char *argv[])
 {
 	vector<std::thread> threads;
-	cout << "Parent PID: " << getpid() << endl;
     paramStruct parameters = paramGet(argc, argv);
 	if(parameters.error==1)
 		return -1;
