@@ -537,7 +537,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			}
 			cout << "  of size: "<< sizeof(buffer) << endl;
 
-			struct timeval rTime = (timeval*)recvTime;
+			struct timeval rTime = (timeval&)recvTime;
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
