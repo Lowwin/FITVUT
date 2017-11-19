@@ -447,7 +447,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	gettimeofday(&start,0);
 	gettimeofday(&outputTimer,0);
 
-	if ((host = gethostbyname(nodes[nodeNumber].c_str())) == NULL)
+	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
 		cerr << "Bad address." << endl;
 	    return -1;
@@ -520,7 +520,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 				{
 					cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
         			cout << " "<< lenght << " bytes from "
-            			<< nodes[nodeNumber].c_str()
+            			<< nodes[nodeNumber].node.c_str()
             			<< " (" << addrString << ")"
             			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 				}
@@ -537,7 +537,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 			float loss =(sentPackets-okPackets)/(sentPackets/100);
 		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber] <<": ";
+				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
 			if(loss==100.0)
 			{
 				cout << "status down" << endl;
