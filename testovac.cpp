@@ -464,9 +464,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     icmp->checksum = 0;
     //icmp->un.echo.sequence = p;
     icmp->checksum = checksum((u_short *)icmp, sizeof(icmphdr));
-    if(sendto(sock,
-        (char *)icmp, sizeof(icmphdr), 0,
-        (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+    if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
     gettimeofday(&start,0);
@@ -495,10 +493,9 @@ int doPing(paramStruct parameters, int nodeNumber)
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
 				okPackets++;
-				cout << "OK: " << okPackets <<endl;
-        		addrString =
-            	strdup(inet_ntoa(receiveSockAddr.sin_addr));
+        		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
+				
         		time(&curTimer);
     			tm_info = localtime(&curTimer);
     			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
