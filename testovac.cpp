@@ -541,7 +541,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
-				nodes[nodeNumber].hourOk++;
+				//nodes[nodeNumber].hourOk++;
 				nodes[nodeNumber].tOk++;
         		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
@@ -573,61 +573,11 @@ int doPing(paramStruct parameters, int nodeNumber)
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
-		//-t vypis ztratovosti
 		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
-		{
-			cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
-			if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
-			{
-				time(&curTimer);
-				tm_info = localtime(&curTimer);
-				strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-				float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
-				cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-					<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-				if(lrint(loss)>=100.0)
-				{
-					cout << "status down" << endl;
-				}
-				else
-				{
-					cout << std::fixed << std::setprecision(3) << loss
-						<< "% packet loss, " << std::fixed << std::setprecision(0) 
-						<< nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
-						<< " packet lost" << endl;
-				}
-			}
-			nodes[nodeNumber].tOk=0;
-			nodes[nodeNumber].tSent=0;
-			gettimeofday(&tOTimer,0);
-			}
-		//hodinovy vypis, v debug 5 s
-		if ((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
-		{
-			time(&curTimer);
-    		tm_info = localtime(&curTimer);
-    		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-			float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
-		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-			if(lrint(loss)>=100.0)
-			{
-				cout << "status down" << endl;
-			}
-			else
-			{
-				std::string statistics = getStatistics(nodeNumber);
-				cout << std::fixed << std::setprecision(0) << loss
-					<< "% packet loss, rtt min/avg/max/mdev "
-					<< statistics << " ms" << endl;
-			}
-		    gettimeofday(&hourOTimer,0);
-			nodes[nodeNumber].rtts.clear();
-			nodes[nodeNumber].hourOk=0;
-			nodes[nodeNumber].hourSent=0;
-		}
+			tOutput(nodeNumber); 
+		if(if ((checkTimer.tv_sec-hourOTimer.tv_sec)>=5))
+		 	hourOutput(nodeNumber);
+		
 		if(((parameters.i*1000) - (timer/1000))>0)
     		usleep((parameters.i*1000) - (timer/1000));
 	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
@@ -637,10 +587,69 @@ int doPing(paramStruct parameters, int nodeNumber)
 	return 0;
 }
 
+int tOutput(int nodeNumber)
+{
+	time_t curTimer;
+	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
+	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
+	{
+		time(&curTimer);
+		tm_info = localtime(&curTimer);
+		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
+		cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+			<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+		if(lrint(loss)>=100.0)
+		{
+			cout << "status down" << endl;
+		}
+		else
+		{
+			cout << std::fixed << std::setprecision(3) << loss
+				<< "% packet loss, " << std::fixed << std::setprecision(0) 
+				<< nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
+				<< " packet lost" << endl;
+		}
+	}
+	nodes[nodeNumber].tOk=0;
+	nodes[nodeNumber].tSent=0;
+	gettimeofday(&tOTimer,0);
+}
+
+int hourOutput(int nodeNumber)
+{
+	time_t curTimer;
+	time(&curTimer);
+    tm_info = localtime(&curTimer);
+    strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
+	cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+		<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+	if(lrint(loss)>=100.0)
+	{
+		cout << "status down" << endl;
+	}
+	else
+	{
+		std::string statistics = getStatistics(nodeNumber);
+		cout << std::fixed << std::setprecision(0) << loss
+			<< "% packet loss, rtt min/avg/max/mdev "
+			<< statistics << " ms" << endl;
+	}
+	gettimeofday(&hourOTimer,0);
+	nodes[nodeNumber].rtts.clear();
+	nodes[nodeNumber].hourOk=0;
+	nodes[nodeNumber].hourSent=0;
+}
+
 int main(int argc, char *argv[])
 {
 	vector<std::thread> threads;
     paramStruct parameters = paramGet(argc, argv);
+	struct timeval outputTimer;
+	gettimeofday(&outputTimer,0);
 	if(parameters.error==1)
 		return -1;
     if(parameters.help)
