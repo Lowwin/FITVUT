@@ -414,6 +414,106 @@ std::string getStatistics(int nodeNumber)
 	return ret.str();
 }
 
+int listenForPackets(int nodeNumber, int pid)
+{
+	int sock, lenght;
+	fd_set mySet;
+	timeval tv;
+	sockaddr_in receiveSockAddr;
+	char buffer[BUFSIZE];
+	iphdr *ip;
+	icmphdr *icmpRecv;
+	time_t curTimer;
+	char timeBuffer[26];
+	struct tm* tm_info;
+	struct timeval konec;
+
+
+	tv.tv_sec = parameters.w;
+    tv.tv_usec = 0;
+
+
+	if ((sock = socket(PF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
+	{
+    	cerr << "Unable to create listen socket." << endl;
+    	return -1;
+	}
+	do
+    {
+    	FD_ZERO(&mySet);
+    	FD_SET(sock, &mySet);
+    	// if (select(sock + 1, &mySet, NULL, NULL, &tv) < 0)
+    	// {
+        //     cerr << "Select failed." << endl;
+        //     break;
+     	// }
+    	if (FD_ISSET(sock, &mySet))
+    	{
+            size = sizeof(sockaddr_in);
+            if ((lenght = recvfrom(sock, buffer, BUFSIZE, 0,
+               (sockaddr *)&receiveSockAddr,
+               &size)) <= 0)
+            {
+            	cerr << "Error when accepting data." << endl;
+            }
+            ip = (iphdr *) buffer;
+    		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
+    		if (icmpRecv->type == ICMP_ECHOREPLY)
+    		{
+        		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
+         		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
+				
+        		time(&curTimer);
+    			tm_info = localtime(&curTimer);
+    			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+				gettimeofday(&konec,0);
+    			
+    	
+				//timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
+				//nodes[nodeNumber].rtts.push_back(timer/1000);
+
+				if(parameters.verbose)
+				{
+					cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
+        			cout << " "<< lenght << " bytes from "
+            			<< nodes[nodeNumber].node.c_str()
+            			<< " (" << addrString << ")"
+            			//<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
+				}
+    		}
+    	}
+
+    	//Print statistics, if time is correct
+    	gettimeofday(&checkTimer, 0);
+		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=3)
+		{
+			time(&curTimer);
+    		tm_info = localtime(&curTimer);
+    		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+			//float loss =(sentPackets-okPackets)/(sentPackets/100);
+		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+			// if(loss==100.0)
+			// {
+			// 	cout << "status down" << endl;
+			// }
+			// else
+			// {
+			// 	std::string statistics = getStatistics(nodeNumber);
+			// 	cout << std::fixed << std::setprecision(0) << loss
+			// 	<< "% packet loss, rtt min/avg/max/mdev "
+			// 	<< statistics << " ms" << endl;
+			// }
+		    gettimeofday(&outputTimer,0);
+			nodes[nodeNumber].rtts.clear();
+			//okPackets=0;
+			//sentPackets=0;
+		}
+	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
+}
+
 /*
 **Sends packets to addresses
 */
@@ -425,14 +525,13 @@ int doPing(paramStruct parameters, int nodeNumber)
 	float lostPackets = 0;	
 	socklen_t size;
 	hostent *host;
-	icmphdr *icmp, *icmpRecv;
-	iphdr *ip;
+	icmphdr *icmp;
 	int sock, total, lenght;
 	unsigned int ttl;
-	sockaddr_in sendSockAddr, receiveSockAddr;
+	sockaddr_in sendSockAddr;
 	char buffer[BUFSIZE];
-	fd_set mySet;
-	timeval tv;
+	
+	
 	char *addrString;
 	in_addr addr;
 	unsigned short int pid = getpid(), p;
@@ -478,85 +577,8 @@ int doPing(paramStruct parameters, int nodeNumber)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
     gettimeofday(&start,0);
-    tv.tv_sec = parameters.w;
-    tv.tv_usec = 0;
-    do
-    {
-    	FD_ZERO(&mySet);
-    	FD_SET(sock, &mySet);
-    	if (select(sock + 1, &mySet, NULL, NULL, &tv) < 0)
-    	{
-            cerr << "Select failed." << endl;
-            break;
-     	}
-    	if (FD_ISSET(sock, &mySet))
-    	{
-            size = sizeof(sockaddr_in);
-            if ((lenght = recvfrom(sock, buffer, BUFSIZE, 0,
-               (sockaddr *)&receiveSockAddr,
-               &size)) <= 0)
-            {
-            	cerr << "Error when accepting data." << endl;
-            }
-            ip = (iphdr *) buffer;
-    		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
-    		if (icmpRecv->type == ICMP_ECHOREPLY)
-    		{
-				okPackets++;
-        		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
-         		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
-				
-        		time(&curTimer);
-    			tm_info = localtime(&curTimer);
-    			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-				gettimeofday(&konec,0);
-    			
-    	
-				timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
-				nodes[nodeNumber].rtts.push_back(timer/1000);
-
-				if(parameters.verbose)
-				{
-					cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
-        			cout << " "<< lenght << " bytes from "
-            			<< nodes[nodeNumber].node.c_str()
-            			<< " (" << addrString << ")"
-            			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
-				}
-    		}
-    	}
-
-    	//Print statistics, if time is correct
-    	gettimeofday(&checkTimer, 0);
-		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=3)
-		{
-			time(&curTimer);
-    		tm_info = localtime(&curTimer);
-    		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-			float loss =(sentPackets-okPackets)/(sentPackets/100);
-		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
-				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-			if(loss==100.0)
-			{
-				cout << "status down" << endl;
-			}
-			else
-			{
-				std::string statistics = getStatistics(nodeNumber);
-				cout << std::fixed << std::setprecision(0) << loss
-				<< "% packet loss, rtt min/avg/max/mdev "
-				<< statistics << " ms" << endl;
-			}
-		    gettimeofday(&outputTimer,0);
-			nodes[nodeNumber].rtts.clear();
-			okPackets=0;
-			sentPackets=0;
-		}
-		if(((parameters.i*1000) - (timer/1000))>0)
-    		usleep((parameters.i*1000) - (timer/1000));
-	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
+    
+    
 	}
 	close(sock);
 	free(icmp);
