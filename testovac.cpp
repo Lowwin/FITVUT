@@ -546,7 +546,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct timeval start, konec;
 	double timer;
 
-	std::thread listen(listenForPackets, parameters, nodeNumber, pid);
+	//std::thread listen(listenForPackets, parameters, nodeNumber, pid);
 
 	gettimeofday(&start,0);
 
@@ -580,8 +580,9 @@ int doPing(paramStruct parameters, int nodeNumber)
 		if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		sentPackets++;
-		gettimeofday(&start,0);
+		//gettimeofday(&start,0);
 	}
+	usleep(parameters.i);
 	close(sock);
 	free(icmp);
 	return 0;
