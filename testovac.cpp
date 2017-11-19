@@ -482,6 +482,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 	cout << str << endl;
 	char timestampBuf[16];
 	gettimeofday((timeval*)timestampBuf,0);
+	gettimeofday(&send,0);
+	cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
 	icmp = (icmphdr *) icmpBuffer;
 	icmp->type = ICMP_ECHO;
 	icmp->code = 0;
@@ -538,6 +540,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			cout << "  of size: "<< sizeof(buffer) << endl;
 
 			struct timeval rTime = (timeval&)recvTime;
+			cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
