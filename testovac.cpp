@@ -609,6 +609,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
 			float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
+			cout << "Loss" << loss;
 		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
 			if(lrint(loss)>=100.0)
