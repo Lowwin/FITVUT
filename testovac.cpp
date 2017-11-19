@@ -445,10 +445,11 @@ int doPing(paramStruct parameters, int nodeNumber)
 	double timer;
 	int datasize = parameters.dataSize;
 
-	struct timeval outputTimer, checkTimer;
+	struct timeval hourOTimer, tOTimer, checkTimer;
 
 	gettimeofday(&start,0);
-	gettimeofday(&outputTimer,0);
+	gettimeofday(&hourOTimer,0);
+	gettimeofday(&tOTimer,0);
 	
 
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
@@ -569,7 +570,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
 		//-t vypis ztratovosti
-		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=parameters.t)
+		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
 		{
 			if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
 			{
@@ -593,9 +594,10 @@ int doPing(paramStruct parameters, int nodeNumber)
 			}
 			nodes[nodeNumber].tOk=0;
 			nodes[nodeNumber].tSent=0;
-		}
+			gettimeofday(&tOTimer,0);
+			}
 		//hodinovy vypis, v debug 5 s
-		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=5)
+		if ((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
 		{
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
@@ -615,7 +617,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 					<< "% packet loss, rtt min/avg/max/mdev "
 					<< statistics << " ms" << endl;
 			}
-		    gettimeofday(&outputTimer,0);
+		    gettimeofday(&hourOTimer,0);
 			nodes[nodeNumber].rtts.clear();
 			nodes[nodeNumber].hourOk=0;
 			nodes[nodeNumber].hourSent=0;
