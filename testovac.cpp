@@ -553,7 +553,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 			sentPackets=0;
 		}
     	usleep(parameters.i*1000);
-	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.sequence == p)));
+	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
 	}
 	close(sock);
 	free(icmp);
