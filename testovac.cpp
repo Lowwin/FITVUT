@@ -506,7 +506,8 @@ int doPing(paramStruct parameters, int nodeNumber)
     icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
     if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
-	sentPackets++;
+	nodes[nodeNumber].hourSent++;
+	nodes[nodeNumber].tSent++;
     gettimeofday(&start,0);
     tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
@@ -540,7 +541,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
-				okPackets++;
+				nodes[nodeNumber].hourOk++;
+				nodes[nodeNumber].tOk++;
         		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
 				
@@ -590,6 +592,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 					<< "packet lost" << endl;
 				}
 			}
+			nodes[nodeNumber].tOk=0;
+			nodes[nodeNumber].tSent=0;
 		}
 		//hodinovy vypis, v debug 5 s
 		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=5)
@@ -598,7 +602,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     		tm_info = localtime(&curTimer);
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
-			float loss =(sentPackets-okPackets)/(sentPackets/100);
+			float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
 		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
 			if(loss==100.0)
@@ -614,8 +618,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 			}
 		    gettimeofday(&outputTimer,0);
 			nodes[nodeNumber].rtts.clear();
-			okPackets=0;
-			sentPackets=0;
+			nodes[nodeNumber].hourOk=0;
+			nodes[nodeNumber].hourSent=0;
 		}
 		if(((parameters.i*1000) - (timer/1000))>0)
     		usleep((parameters.i*1000) - (timer/1000));
