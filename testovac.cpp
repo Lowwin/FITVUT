@@ -520,7 +520,7 @@ int doPing(paramStruct parameters, int nodeNumber)
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
 			for(int i=0; i<BUFSIZE; i++)
-			cout << buffer;
+			cout << buffer[i];
 
 			cout << endl;
     		if (icmpRecv->type == ICMP_ECHOREPLY)
