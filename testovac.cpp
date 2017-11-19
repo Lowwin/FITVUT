@@ -473,6 +473,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	gettimeofday(&send,0);
 	cout << "Send time: " << send.tv_sec << "." << send.tv_usec <<endl;
 	cout << "Size sec: " << sizeof(send.tv_sec) << " usec: " << sizeof(send.tv_usec) << endl;
+	cout << "Whloe structure: " << send << " size: " << sizeof(send) << endl;
 	char icmpBuffer[65000];
 	char *bufPointer = icmpBuffer;
 	char str[datasize];
