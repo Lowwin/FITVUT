@@ -468,8 +468,8 @@ int doPing(paramStruct parameters, int nodeNumber)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
     gettimeofday(&start,0);
-    tv.tv_sec = 5;
-    tv.tv_usec = 0;
+    tv.tv_sec = 0;
+    tv.tv_usec = parameters.w*1000;
     do
     {
     	FD_ZERO(&mySet);
