@@ -641,9 +641,16 @@ int doPing(paramStruct parameters, int nodeNumber)
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
 		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
+		{
 			tOutput(nodeNumber); 
+			gettimeofday(&tOTimer,0)
+		}
+			
 		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
-		 	hourOutput(nodeNumber);
+		{
+			houtOutput(nodeNumber); 
+			gettimeofday(&hourOTimer,0)
+		}
 		
 		if(((parameters.i*1000) - (timer/1000))>0)
     		usleep((parameters.i*1000) - (timer/1000));
