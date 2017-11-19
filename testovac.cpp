@@ -643,13 +643,13 @@ int doPing(paramStruct parameters, int nodeNumber)
 		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
 		{
 			tOutput(nodeNumber); 
-			gettimeofday(&tOTimer,0)
+			gettimeofday(&tOTimer,0);
 		}
 			
 		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
 		{
-			houtOutput(nodeNumber); 
-			gettimeofday(&hourOTimer,0)
+			hourOutput(nodeNumber); 
+			gettimeofday(&hourOTimer,0);
 		}
 		
 		if(((parameters.i*1000) - (timer/1000))>0)
