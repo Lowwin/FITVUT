@@ -423,8 +423,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 {
 	nodes[nodeNumber].hourOk = 4496;
 	nodes[nodeNumber].hourSent = 4500;
-	nodes[nodeNumber].tOk = 0;
-	nodes[nodeNumber].tSent = 0;	
+	nodes[nodeNumber].tOk = 4496;
+	nodes[nodeNumber].tSent = 4500;	
 	socklen_t size;
 	hostent *host;
 	icmphdr *icmp, *icmpRecv;
@@ -592,7 +592,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 				}
 				else
 				{
-					cout << std::fixed << std::setprecision(0) << loss
+					cout << std::fixed << std::setprecision(3) << loss
 						<< "% packet loss, " << nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
 						<< "packet lost" << endl;
 				}
@@ -609,7 +609,6 @@ int doPing(paramStruct parameters, int nodeNumber)
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
 			float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
-			cout << "Loss" << loss;
 		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
 			if(lrint(loss)>=100.0)
