@@ -514,7 +514,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 	struct timeval hourOTimer, tOTimer, checkTimer;
 
-	gettimeofday(&start,0);
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
 	
@@ -618,9 +617,8 @@ int doPing(paramStruct parameters, int nodeNumber)
     			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
 				gettimeofday(&konec,0);
-    			
     	
-				timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
+				timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
 				nodes[nodeNumber].rtts.push_back(timer/1000);
 
 				if(parameters.verbose)
