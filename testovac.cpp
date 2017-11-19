@@ -493,7 +493,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	}
 
     icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
-    if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+    if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
     gettimeofday(&start,0);
