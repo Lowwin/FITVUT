@@ -63,6 +63,8 @@ typedef struct nodesStruct
 {
 	std::string node;
 	vector<float> rtts;
+	int hourOk, hourSent;
+	int tOk, tSent;
 } nodesStruct;
 
 //Input nodes
@@ -419,10 +421,10 @@ std::string getStatistics(int nodeNumber)
 */
 int doPing(paramStruct parameters, int nodeNumber)
 {
-	float sentPackets = 0;
-	float okPackets = 0;
-	float latePackets = 0;
-	float lostPackets = 0;	
+	nodes[nodeNumber].hourOk = 0;
+	nodes[nodeNumber].hourSent = 0;
+	nodes[nodeNumber].tOk = 0;
+	nodes[nodeNumber].tSent = 0;	
 	socklen_t size;
 	hostent *host;
 	icmphdr *icmp, *icmpRecv;
@@ -469,7 +471,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 	while (1)
 	{
 	timer =0;
-    
 	char icmpBuffer[65000];
 	char *bufPointer = icmpBuffer;
 	char str[datasize-16];
@@ -530,13 +531,6 @@ int doPing(paramStruct parameters, int nodeNumber)
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
 			char recvTime[16];
-			cout << "Got data: ";
-			for(int i=0; i<sizeof(buffer); i++)
-			{
-				cout << buffer[i];
-			}
-			cout << "  of size: "<< sizeof(buffer) << endl;
-
 			char *bufTimePointer = buffer;
 			bufTimePointer+=28;
 			memcpy(recvTime,bufTimePointer,sizeof(timeval));
@@ -573,7 +567,32 @@ int doPing(paramStruct parameters, int nodeNumber)
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
-		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=3)
+		//-t vypis ztratovosti
+		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=parameters.t)
+		{
+			if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
+			{
+				time(&curTimer);
+				tm_info = localtime(&curTimer);
+				strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+				float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
+				cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+					<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
+				if(loss==100.0)
+				{
+					cout << "status down" << endl;
+				}
+				else
+				{
+					cout << std::fixed << std::setprecision(0) << loss
+					<< "% packet loss, " << nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
+					<< "packet lost" << endl;
+				}
+			}
+		}
+		//hodinovy vypis, v debug 5 s
+		if ((checkTimer.tv_sec-outputTimer.tv_sec)>=5)
 		{
 			time(&curTimer);
     		tm_info = localtime(&curTimer);
