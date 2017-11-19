@@ -519,10 +519,9 @@ int doPing(paramStruct parameters, int nodeNumber)
             }
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
-			for(int i=0; i<BUFSIZE; i++)
+			for(int i=0; i<sizeof(buffer); i++)
 			cout << buffer[i];
-
-			cout << endl;
+			cout << endl << sizeof(buffer) << endl;
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
 				okPackets++;
