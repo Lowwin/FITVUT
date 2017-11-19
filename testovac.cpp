@@ -593,7 +593,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 				else
 				{
 					cout << std::fixed << std::setprecision(3) << loss
-						<< "% packet loss, " << nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
+						<< "% packet loss, " << std::fixed << std::setprecision(0) 
+						<< nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
 						<< "packet lost" << endl;
 				}
 			}
