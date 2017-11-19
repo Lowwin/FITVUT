@@ -463,7 +463,7 @@ int hourOutput(int nodeNumber)
 	time(&curTimer);
     tm_info = localtime(&curTimer);
     strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
+	cout << "Hour OK: " << nodes[nodeNumber].hourOk << " Sent: " << nodes[nodeNumber].hourSent << endl;
 	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
 	cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 		<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
