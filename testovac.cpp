@@ -414,12 +414,13 @@ std::string getStatistics(int nodeNumber)
 	return ret.str();
 }
 
-int listenForPackets(int nodeNumber, int pid)
+int listenForPackets(paramStruct parameters, int nodeNumber, int pid)
 {
 	int sock, lenght;
 	fd_set mySet;
 	timeval tv;
 	sockaddr_in receiveSockAddr;
+	socklen_t size;
 	char buffer[BUFSIZE];
 	iphdr *ip;
 	icmphdr *icmpRecv;
@@ -427,7 +428,11 @@ int listenForPackets(int nodeNumber, int pid)
 	char timeBuffer[26];
 	struct tm* tm_info;
 	struct timeval konec;
+	hostent *host;
+	char *addrString;
+	struct timeval outputTimer, checkTimer;
 
+	gettimeofday(&outputTimer,0);
 
 	tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
@@ -458,7 +463,7 @@ int listenForPackets(int nodeNumber, int pid)
             }
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
-    		if (icmpRecv->type == ICMP_ECHOREPLY)
+    		if ((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY))
     		{
         		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
          		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
@@ -478,7 +483,7 @@ int listenForPackets(int nodeNumber, int pid)
 					cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
         			cout << " "<< lenght << " bytes from "
             			<< nodes[nodeNumber].node.c_str()
-            			<< " (" << addrString << ")"
+            			<< " (" << addrString << ")";
             			//<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 				}
     		}
@@ -511,7 +516,7 @@ int listenForPackets(int nodeNumber, int pid)
 			//okPackets=0;
 			//sentPackets=0;
 		}
-	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
+	} while (1);
 }
 
 /*
@@ -541,10 +546,9 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct timeval start, konec;
 	double timer;
 
-	struct timeval outputTimer, checkTimer;
+	std::thread listen(listenForPackets, parameters, nodeNumber, pid);
 
 	gettimeofday(&start,0);
-	gettimeofday(&outputTimer,0);
 
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
@@ -569,16 +573,14 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 	while (1)
 	{
-	timer =0;
-    icmp->checksum = 0;
-    //icmp->un.echo.sequence = p;
-    icmp->checksum = checksum((u_short *)icmp, sizeof(icmphdr));
-    if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
-        cout << "DID NOT SEND A THING." << endl;
-	sentPackets++;
-    gettimeofday(&start,0);
-    
-    
+		timer =0;
+		icmp->checksum = 0;
+		//icmp->un.echo.sequence = p;
+		icmp->checksum = checksum((u_short *)icmp, sizeof(icmphdr));
+		if(sendto(sock,  (char *)icmp, sizeof(icmphdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+			cout << "DID NOT SEND A THING." << endl;
+		sentPackets++;
+		gettimeofday(&start,0);
 	}
 	close(sock);
 	free(icmp);
