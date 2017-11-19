@@ -470,9 +470,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 	{
 	timer =0;
     
-	
-	cout << "Send time: " << send.tv_sec << "." << send.tv_usec <<endl;
-	cout << "Size sec: " << sizeof(send.tv_sec) << " usec: " << sizeof(send.tv_usec) << endl;
 	char icmpBuffer[65000];
 	char *bufPointer = icmpBuffer;
 	char str[datasize-16];
@@ -530,9 +527,18 @@ int doPing(paramStruct parameters, int nodeNumber)
             }
             ip = (iphdr *) buffer;
     		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
+			char recvTime[16];
+			cout << "Got data: ";
 			for(int i=0; i<sizeof(buffer); i++)
-			cout << buffer[i];
-			cout << endl << sizeof(buffer) << endl;
+			{
+				if(i<16)
+					recvTime[i] = buffer[i];
+				cout << buffer[i];
+			}
+			cout << "  of size: "<< sizeof(buffer) << endl;
+
+			struct timeval rTime = (timeval*)recvTime;
+
     		if (icmpRecv->type == ICMP_ECHOREPLY)
     		{
 				okPackets++;
