@@ -572,6 +572,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 		//-t vypis ztratovosti
 		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
 		{
+			cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
 			if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
 			{
 				time(&curTimer);
