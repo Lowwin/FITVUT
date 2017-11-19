@@ -482,6 +482,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	{
         str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
+	cout << str << endl;
 	gettimeofday((timeval*)str,0);
 	icmp = (icmphdr *) icmpBuffer;
 	icmp->type = ICMP_ECHO;
