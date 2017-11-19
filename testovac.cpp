@@ -63,8 +63,8 @@ typedef struct nodesStruct
 {
 	std::string node;
 	vector<float> rtts;
-	int hourOk, hourSent;
-	int tOk, tSent;
+	float hourOk, hourSent;
+	float tOk, tSent;
 } nodesStruct;
 
 //Input nodes
@@ -480,7 +480,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 	{
         str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
     }
-	cout << str << endl;
 	char timestampBuf[16];
 	gettimeofday((timeval*)timestampBuf,0);
 	gettimeofday(&send,0);
@@ -558,8 +557,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 				if(parameters.verbose)
 				{
-					cout << timeBuffer << "." << lrint(konec.tv_usec/10000);
-        			cout << " "<< lenght << " bytes from "
+					cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
+        				<< " "<< lenght << " bytes from "
             			<< nodes[nodeNumber].node.c_str()
             			<< " (" << addrString << ")"
             			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
@@ -588,8 +587,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 				else
 				{
 					cout << std::fixed << std::setprecision(0) << loss
-					<< "% packet loss, " << nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
-					<< "packet lost" << endl;
+						<< "% packet loss, " << nodes[nodeNumber].tSent-nodes[nodeNumber].tOk
+						<< "packet lost" << endl;
 				}
 			}
 			nodes[nodeNumber].tOk=0;
@@ -613,8 +612,8 @@ int doPing(paramStruct parameters, int nodeNumber)
 			{
 				std::string statistics = getStatistics(nodeNumber);
 				cout << std::fixed << std::setprecision(0) << loss
-				<< "% packet loss, rtt min/avg/max/mdev "
-				<< statistics << " ms" << endl;
+					<< "% packet loss, rtt min/avg/max/mdev "
+					<< statistics << " ms" << endl;
 			}
 		    gettimeofday(&outputTimer,0);
 			nodes[nodeNumber].rtts.clear();
