@@ -566,6 +566,10 @@ int doPing(paramStruct parameters, int nodeNumber)
 				}
     		}
     	}
+		else
+     	{
+     		break;
+     	}
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
