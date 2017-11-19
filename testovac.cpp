@@ -58,8 +58,15 @@ std::string HelpMsg =
 	"<node>            IPv4/IPv6 adress or hostname.\n"
 	;
 
+
+typedef struct nodesStruct 
+{
+	std::string node;
+	vector<float> rtts;
+} nodesStruct;
+
 //Input nodes
-vector<std::string> nodes;
+vector<nodesStruct> nodes;
 
 /*
 **Structure for parameters
@@ -92,7 +99,7 @@ void printParameters(paramStruct p)
     cout << "    Listen UDP port: "<< p.listenUdp << endl;
     cout << "    RTT: "<< p.rtt << endl;
     for(int i=0; i<nodes.size(); i++)
-  		cout << "    Node " << i+1 << ": " << nodes[i] <<endl;
+  		cout << "    Node " << i+1 << ": " << nodes[i].node <<endl;
 }
 
 bool isInt(char *str)
@@ -329,7 +336,11 @@ paramStruct paramGet(int argc, char *argv[])
 	    }
 	    else
 	    	{
-	    		nodes.push_back(argv[i]);
+				nodesStruct newNode;
+				newNode.node = argv[i];
+				vector<float> rtts;
+				newNode.rtts = rtts;
+	    		nodes.push_back(newNode);
 	    	}
         }
     return actualParameters;
@@ -373,25 +384,25 @@ u_short checksum(u_short *addr, int len)
 	return (answer);
 }
 
-std::string getStatistics(vector<float> &rtts)
+std::string getStatistics(int nodeNumber)
 {
 	float min = 10000000.0;
 	float max = -10000000.0;
 	float sum = 0;
 	float sum2 = 0;
 	float mean, smean, mdev;
-	for(int i=0;i<rtts.size();i++)
+	for(int i=0;i<nodes[nodeNumber].rtts.size();i++)
     {
-        if(rtts[i]<min)
-        	min=rtts[i];
-		if(rtts[i]>max)
-			max=rtts[i];
-		sum += rtts[i];
-		sum2 += rtts[i]*rtts[i];
+        if(nodes[nodeNumber].rtts[i]<min)
+        	min=nodes[nodeNumber].rtts[i];
+		if(nodes[nodeNumber].rtts[i]>max)
+			max=nodes[nodeNumber].rtts[i];
+		sum += nodes[nodeNumber].rtts[i];
+		sum2 += nodes[nodeNumber].rtts[i]*nodes[nodeNumber].rtts[i];
     }
-	float avg = sum/rtts.size();
-	mean = sum/rtts.size();
-	smean = sum2/rtts.size();
+	float avg = sum/nodes[nodeNumber].rtts.size();
+	mean = sum/nodes[nodeNumber].rtts.size();
+	smean = sum2/nodes[nodeNumber].rtts.size();
 	mdev = sqrt(smean-(mean*mean));
 
 	std::ostringstream ret;
@@ -430,7 +441,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 	struct tm* tm_info;
 	struct timeval start, konec;
 	double timer;
-	vector<float> rtts;
 
 	struct timeval outputTimer, checkTimer;
 
@@ -468,7 +478,6 @@ int doPing(paramStruct parameters, int nodeNumber)
         cout << "DID NOT SEND A THING." << endl;
 	sentPackets++;
     gettimeofday(&start,0);
-	cout << parameters.w;
     tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
     do
@@ -505,7 +514,7 @@ int doPing(paramStruct parameters, int nodeNumber)
     			
     	
 				timer = ((konec.tv_sec-start.tv_sec)*1000000 + (konec.tv_usec - start.tv_usec));
-				rtts.push_back(timer/1000);
+				nodes[nodeNumber].rtts.push_back(timer/1000);
 
 				if(parameters.verbose)
 				{
@@ -516,14 +525,6 @@ int doPing(paramStruct parameters, int nodeNumber)
             			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 				}
     		}
-    		else
-				;
-      			//cout << "NOP. Did not do." << endl;
-    	}
-    	else
-    	{
-			;
-    		//cout << "Timeout" << endl;
     	}
 
     	//Print statistics, if time is correct
@@ -535,21 +536,21 @@ int doPing(paramStruct parameters, int nodeNumber)
     		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
 			float loss =(sentPackets-okPackets)/(sentPackets/100);
-			 
-		    cout << timeBuffer << "." << std::fixed << std::setprecision(2) << lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber] <<": ";
-
+		    cout << timeBuffer << "." << std::fixed << std::setprecision(2)
+				<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber] <<": ";
 			if(loss==100.0)
 			{
 				cout << "status down" << endl;
-			} else
+			}
+			else
 			{
-				std::string statistics = getStatistics(rtts);
+				std::string statistics = getStatistics(nodeNumber);
 				cout << std::fixed << std::setprecision(0) << loss
 				<< "% packet loss, rtt min/avg/max/mdev "
 				<< statistics << " ms" << endl;
 			}
 		    gettimeofday(&outputTimer,0);
-			rtts.clear();
+			nodes[nodeNumber].rtts.clear();
 			okPackets=0;
 			sentPackets=0;
 		}
