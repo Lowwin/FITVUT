@@ -666,11 +666,9 @@ int doPing6(paramStruct parameters, int nodeNumber)
 	sendSockAddr.sin6_port = 0;
 	inet_pton(AF_INET6, nodes[nodeNumber].node.c_str(),&(sendSockAddr.sin6_addr));*/
 
-	memset(&sendSockAddr, 0, sizeof(sockaddr_in6));
+	memset(&sendSockAddr, 0, sizeof(sendSockAddr));
 	// copy address
 	memcpy(&sendSockAddr, servinfo->ai_addr, servinfo->ai_addrlen);
-	sendSockAddr.sin_family = AF_INET6;
-	sendSockAddr.sin_port = 0;
 
 	while (1)
 	{
