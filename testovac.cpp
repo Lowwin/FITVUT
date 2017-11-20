@@ -604,7 +604,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 	timeval tv;
 	char *addrString;
 	in_addr addr;
-	unsigned short int pid = getpid(), p;
+	unsigned short int pid = getpid();
 	time_t curTimer;
 	char timeBuffer[26];
 	struct tm* tm_info;
