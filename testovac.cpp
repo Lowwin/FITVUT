@@ -749,7 +749,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	socklen_t size;
 	hostent *host;
 	icmphdr *icmp, *icmpRecv;
-	iphdr *ip;
+	//iphdr *ip;
 	int sock, total, lenght;
 	unsigned int ttl = 255;
 	sockaddr_in sendSockAddr, receiveSockAddr;
