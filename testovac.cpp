@@ -66,6 +66,7 @@ typedef struct nodesStruct
 	float hourOk, hourSent;
 	float tOk, tSent;
 	float tLate, tLost;
+	float rtt;
 } nodesStruct;
 
 //Input nodes
@@ -423,10 +424,18 @@ void tOutput(int nodeNumber)
 		tm_info = localtime(&curTimer);
 		strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 
-		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk)/(nodes[nodeNumber].tSent/100);
+		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk-nodes[nodeNumber].tLate)/(nodes[nodeNumber].tSent/100);
 		cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 			<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-		if(lrint(loss)>=100.0)
+		if(nodes[nodeNumber].tLate!=0.0)
+		{
+			float lateness = (nodes[nodeNumber].tLate)/(nodes[nodeNumber].tSent/100);
+			cout << std::fixed << std::setprecision(3) << lateness << "%% (" 
+				<< std::fixed << std::setprecision(0) << nodes[nodeNumber].tLate
+				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].rtt
+				<< "ms"
+		}
+		else if(lrint(loss)>=100.0)
 		{
 			cout << "status down" << endl;
 		}
@@ -548,6 +557,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 					<< " (" << addrString << ")"
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 			}
+			nodes[nodeNumber].rtt = parameters.rtt;
 			
 			if((parameters.rtt != 0) && ((timer/1000) > parameters.rtt*2))
 			{
@@ -561,6 +571,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 			else
 			{
 				nodes[nodeNumber].tOk++;
+				nodes[nodeNumber].hourOk++;
 			}
 		}
 	}
@@ -599,8 +610,6 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
-	
-	cout << "Do I get here" << endl;
 
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
