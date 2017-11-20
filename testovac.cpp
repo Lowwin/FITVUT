@@ -774,8 +774,6 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
 
-
-	cout << "ICMP header size: " <<sizeof(icmphdr) << endl;
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
 		cerr << "Bad address." << endl;
@@ -808,8 +806,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		}
 		char timestampBuf[16];
 		gettimeofday((timeval*)timestampBuf,0);
-		gettimeofday(&send,0);
-		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
+
 		icmp = (icmphdr *) icmpBuffer;
 		icmp->type = ICMP_ECHO;
 		icmp->code = 0;
