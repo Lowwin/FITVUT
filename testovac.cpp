@@ -669,6 +669,8 @@ int doPing6(paramStruct parameters, int nodeNumber)
 	memset(&sendSockAddr, 0, sizeof(sockaddr_in6));
 	// copy address
 	memcpy(&sendSockAddr, servinfo->ai_addr, servinfo->ai_addrlen);
+	sendSockAddr.sin_family = AF_INET6;
+	sendSockAddr.sin_port = 0;
 
 	while (1)
 	{
@@ -711,7 +713,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 		if(errsend<=0)
 		{	
 			fprintf(stderr, "Sendto: %s\n", gai_strerror(errsend));
-			cout << "DID NOT SEND A THING. Error " << errsend << endl;
+			return -1;
 		}
 		
 		nodes[nodeNumber].hourSent++;
