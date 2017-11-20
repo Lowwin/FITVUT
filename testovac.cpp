@@ -831,19 +831,6 @@ int doPing4(paramStruct parameters, int nodeNumber)
 			cout << "DID NOT SEND A THING." << endl;
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
-
-    	//Print statistics, if time is correct
-    	gettimeofday(&checkTimer, 0);
-		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
-		{
-			tOutput(nodeNumber); 
-			gettimeofday(&tOTimer,0);
-		}	
-		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
-		{
-			hourOutput(nodeNumber); 
-			gettimeofday(&hourOTimer,0);
-		}
     	
 		usleep(parameters.i*1000);
 	}
@@ -852,6 +839,66 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	return 0;
 }
 
+int listenToUdp4(paramStruct parameters, int nodeNumber)
+{
+	int length;
+	int recvBufSize=255*4 + sizeof(iphdr);
+	char buffer[recvBufSize];
+	sockaddr_in receiveSockAddr;
+	socklen_t size;
+	hostent *host;
+	iphdr *ip;
+	icmphdr *icmpRecv;
+	unsigned short int pid = getpid();
+	timeval tv;
+	int sock;
+	unsigned int ttl = 255;
+	
+	tv.tv_sec = parameters.w;
+    tv.tv_usec = 0;
+	nodes[nodeNumber].w = parameters.w;
+	nodes[nodeNumber].r = parameters.rtt;
+
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    {
+    	cerr << "Error when creating listen socket" << endl;
+    	return -1;
+    }
+	//setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+
+	receiveSockAddr.sin_family = AF_INET;
+	receiveSockAddr.sin_port = parameters.portUdp;
+	receiveSockAddr.sin_addr.s_addr = INADDR_ANY;
+
+	if(bind(sock, (sockaddr*)&receiveSockAddr, sizeof(receiveSockAddr)) <= -1)
+	{
+		cerr << "Unable to bind socket." << endl;
+		return -1;
+	}
+
+    size = sizeof(sockaddr_in);
+	icmpRecv = (icmphdr*)buffer;
+	while(1)
+    {
+		length = 0;
+		if ((length = recvfrom(sock, buffer, recvBufSize, 0, (sockaddr *)&receiveSockAddr, &size)) <= 0)
+		{
+			cerr << "Error when accepting data." << endl;
+			break;
+		}
+
+		icmpRecv->type = ICMP_ECHOREPLY;
+        icmpRecv->checksum = 0;
+        icmpRecv->checksum = checksum((u_short *)icmpRecvHdr, length);
+
+		if (sendto(s, buffer, length, 0, (sockaddr*)&receiveSockAddr, sizeof(receiveSockAddr)) <= 0)
+		{
+			cout << "Send Error" << endl;
+			return -1;
+		}
+	}
+}
 
 int doPingUdp4(paramStruct parameters, int nodeNumber)
 {
@@ -946,7 +993,7 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		else
-			cout << "I did it! Sent a packet with udp. Size" << sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf) << endl;
+			cout << "I did it! Sent a packet with udp." << endl;
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
 
@@ -1015,6 +1062,8 @@ int main(int argc, char *argv[])
 			}
 			else if(res->ai_family == AF_INET6)
 			{
+				cout << "Not implemented." << endl;
+				return -1;
 			}
 			else
 			{
@@ -1023,6 +1072,10 @@ int main(int argc, char *argv[])
 			}
 			memset(&hint, '\0', sizeof hint);
 		}
+	}
+	if(parameters.listenUdp)
+	{
+		threadsListen.push_back(std::thread(listenToUdp4, parameters, nodeCounter));
 	}
 	else
 	{
