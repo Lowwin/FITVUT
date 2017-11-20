@@ -686,6 +686,17 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
     	
+		gettimeofday(&checkTimer, 0);
+		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
+		{
+			tOutput(nodeNumber); 
+			gettimeofday(&tOTimer,0);
+		}	
+		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=3600)
+		{
+			hourOutput(nodeNumber); 
+			gettimeofday(&hourOTimer,0);
+		}
 		usleep(parameters.i*1000);
 	}
 	close(sock);
@@ -782,7 +793,6 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
     	return -1;
     }
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
-	cout << " I do listen, I swear!" << endl;
     size = sizeof(sockaddr_in);
 	while(1)
     {
@@ -934,8 +944,6 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf));
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
-		else
-			cout << "I did it! Sent a packet with udp." << endl;
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
 
@@ -946,7 +954,7 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 			tOutput(nodeNumber); 
 			gettimeofday(&tOTimer,0);
 		}	
-		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
+		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=3600)
 		{
 			hourOutput(nodeNumber); 
 			gettimeofday(&hourOTimer,0);
