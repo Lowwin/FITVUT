@@ -679,7 +679,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 		
 		if(((parameters.i*1000) - (timer/1000))>0)
     		usleep((parameters.i*1000) - (timer/1000));
-	
+	}
 	close(sock);
 	free(icmp);
 	return 0;
