@@ -483,6 +483,83 @@ int hourOutput(int nodeNumber)
 	nodes[nodeNumber].hourSent=0;
 }
 
+
+int listenTo(paramStruct parameters, int nodeNumber)
+{
+	int length;
+	char buffer[65000];
+	sockaddr_in receiveSockAddr;
+	socklen_t size;
+	iphdr *ip;
+	icmphdr *icmpRecv;
+	unsigned short int pid = getpid();
+	timeval tv;
+	int sock;
+	unsigned int ttl = 255;
+	
+	tv.tv_sec = parameters.w;
+    tv.tv_usec = 0;
+
+
+	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
+    {
+    	printf("dojebane\n");;
+    	return -1;
+    }
+	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+
+    size = sizeof(sockaddr_in);
+	while(1)
+    {
+		length = 0;
+		if ((length = recvfrom(sock, buffer, 65000, 0, (sockaddr *)&receiveSockAddr, &size)) <= 0)
+		{
+			cerr << "Error when accepting data." << endl;
+			break;
+		}
+
+		ip = (iphdr *) buffer;
+		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
+
+		
+		//cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
+
+		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid))
+		{
+			char recvTime[16];
+			char *bufTimePointer = buffer;
+			bufTimePointer+=28;
+			memcpy(recvTime,bufTimePointer,sizeof(timeval));
+
+			struct timeval rTime = (timeval &)recvTime;
+
+			addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
+			host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
+					
+			time(&curTimer);
+			tm_info = localtime(&curTimer);
+			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+			gettimeofday(&konec,0);
+			
+			timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
+			nodes[nodeNumber].rtts.push_back(timer/1000);
+
+			if(parameters.verbose)
+			{
+				cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
+					<< " "<< lenght << " bytes from "
+					<< nodes[nodeNumber].node.c_str()
+					<< " (" << addrString << ")"
+					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
+			}
+
+			nodes[nodeNumber].hourOk++;
+			nodes[nodeNumber].tOk++;
+		}
+	}
+}
+
 /*
 **Sends packets to addresses
 */
@@ -497,7 +574,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	icmphdr *icmp, *icmpRecv;
 	iphdr *ip;
 	int sock, total, lenght;
-	unsigned int ttl;
+	unsigned int ttl = 255;
 	sockaddr_in sendSockAddr, receiveSockAddr;
 	char buffer[BUFSIZE];
 	fd_set mySet;
@@ -508,7 +585,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	time_t curTimer;
 	char timeBuffer[26];
 	struct tm* tm_info;
-	struct timeval start, konec, send;
+	struct timeval konec, send;
 	double timer;
 	int datasize = parameters.dataSize;
 
@@ -517,6 +594,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
 	
+	std::thread(listenTo, parameters, nodeNumber);
 
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
@@ -528,12 +606,12 @@ int doPing(paramStruct parameters, int nodeNumber)
     	cerr << "Unable to create socket." << endl;
     	return -1;
 	}
-	ttl = 255;
+	
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
 	
 	sendSockAddr.sin_family = AF_INET;
 	sendSockAddr.sin_port = 0;
-	memcpy(&sendSockAddr.sin_addr, host->h_addr, host->h_length);
+	memcpy(&(sendSockAddr.sin_addr), host->h_addr, host->h_length);
 
 	while (1)
 	{
@@ -557,6 +635,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	icmp->un.echo.id = pid;
 	icmp->checksum = 0;
     icmp->un.echo.sequence = 0;
+
 	bufPointer+= sizeof(icmp);
 	for (int i=0; i<16;i++)
 	{
@@ -574,67 +653,8 @@ int doPing(paramStruct parameters, int nodeNumber)
         cout << "DID NOT SEND A THING." << endl;
 	nodes[nodeNumber].hourSent++;
 	nodes[nodeNumber].tSent++;
-    gettimeofday(&start,0);
-    tv.tv_sec = parameters.w;
-    tv.tv_usec = 0;
-    do
-    {
-    	FD_ZERO(&mySet);
-    	FD_SET(sock, &mySet);
-    	if (select(sock + 1, &mySet, NULL, NULL, &tv) < 0)
-    	{
-            cerr << "Select failed." << endl;
-            break;
-     	}
-    	if (FD_ISSET(sock, &mySet))
-    	{
-            size = sizeof(sockaddr_in);
-            if ((lenght = recvfrom(sock, buffer, BUFSIZE, 0,
-               (sockaddr *)&receiveSockAddr,
-               &size)) <= 0)
-            {
-            	cerr << "Error when accepting data." << endl;
-            }
-            ip = (iphdr *) buffer;
-    		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
-			char recvTime[16];
-			char *bufTimePointer = buffer;
-			bufTimePointer+=28;
-			memcpy(recvTime,bufTimePointer,sizeof(timeval));
 
-			struct timeval rTime = (timeval &)recvTime;
-			//cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
-
-    		if (icmpRecv->type == ICMP_ECHOREPLY)
-    		{
-				nodes[nodeNumber].hourOk++;
-				nodes[nodeNumber].tOk++;
-        		addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
-         		host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
-				
-        		time(&curTimer);
-    			tm_info = localtime(&curTimer);
-    			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-
-				gettimeofday(&konec,0);
-    	
-				timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
-				nodes[nodeNumber].rtts.push_back(timer/1000);
-
-				if(parameters.verbose)
-				{
-					cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
-        				<< " "<< lenght << " bytes from "
-            			<< nodes[nodeNumber].node.c_str()
-            			<< " (" << addrString << ")"
-            			<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
-				}
-    		}
-    	}
-		else
-     	{
-     		break;
-     	}
+    
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
@@ -652,8 +672,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 		
 		if(((parameters.i*1000) - (timer/1000))>0)
     		usleep((parameters.i*1000) - (timer/1000));
-	} while (!((icmpRecv->un.echo.id == pid) && (icmpRecv->type == ICMP_ECHOREPLY)));
-	}
+	
 	close(sock);
 	free(icmp);
 	return 0;
