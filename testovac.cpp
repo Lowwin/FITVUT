@@ -901,9 +901,9 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 	sendSockAddr.sin_port = parameters.portUdp;
 	sendSockAddr.sin_addr.s_addr = INADDR_ANY;
 
-	if(bind(s, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr)) <= -1)
+	if(bind(sock, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr)) <= -1)
 	{
-		cerr << "Unable to bind socket. " <<sterror(errno) << endl;
+		cerr << "Unable to bind socket."  << endl;
 		return -1;
 	}
 
@@ -993,52 +993,56 @@ int main(int argc, char *argv[])
     }
     if(parameters.udp)
 	{
-		if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
+		for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
 		{
-			cerr << "Invalid address." << endl;
-			return -1;
+			if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
+			{
+				cerr << "Invalid address." << endl;
+				return -1;
+			}
+			if(res->ai_family == AF_INET)
+			{
+				threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
+				threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
+			}
+			else if(res->ai_family == AF_INET6)
+			{
+				threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
+			}
+			else
+			{
+				cout << "What is this address?" << endl;
+				return -1;
+			}
+			memset(&hint, '\0', sizeof hint);
 		}
-		if(res->ai_family == AF_INET)
-		{
-			threadsPing.push_back(std::thread(doPingUdp4, parameters, nodeCounter));
-			//threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
-		}
-		else if(res->ai_family == AF_INET6)
-		{
-			//threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
-		}
-		else
-		{
-			cout << "What is this address?" << endl;
-			return -1;
-		}
-		memset(&hint, '\0', sizeof hint);
 	}
-    	
-
-    for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
-    {
-		if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
+	else
+	{
+		for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
 		{
-			cerr << "Invalid address." << endl;
-			return -1;
+			if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
+			{
+				cerr << "Invalid address." << endl;
+				return -1;
+			}
+			if(res->ai_family == AF_INET)
+			{
+				threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
+				threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
+			}
+			else if(res->ai_family == AF_INET6)
+			{
+				threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
+			}
+			else
+			{
+				cout << "What is this address?" << endl;
+				return -1;
+			}
+			memset(&hint, '\0', sizeof hint);
 		}
-		if(res->ai_family == AF_INET)
-		{
-			threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
-			threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
-		}
-		else if(res->ai_family == AF_INET6)
-		{
-			threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
-		}
-		else
-		{
-			cout << "What is this address?" << endl;
-			return -1;
-		}
-		memset(&hint, '\0', sizeof hint);
-    }
+	}
     
 	for (std::thread& t : threadsPing)
     	t.join();
