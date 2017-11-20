@@ -877,6 +877,7 @@ int main(int argc, char *argv[])
 		else if(res->ai_family == AF_INET6)
 		{
 			cout << "Jsem IPv6" <<endl;
+			threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
 		}
 		else
 		{
