@@ -722,7 +722,7 @@ int main(int argc, char *argv[])
 
     for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
-		if(getaddrinfo(nodes[nodeCounter].node, NULL, &hint, &res))
+		if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
 		{
 			cerr << "Invalid address." << endl;
 			return -1;
