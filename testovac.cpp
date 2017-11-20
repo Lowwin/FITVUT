@@ -519,7 +519,7 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 	tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
 	nodes[nodeNumber].w = parameters.w;
-	nodes[nodeNumber].r = parameters.r;
+	nodes[nodeNumber].r = parameters.rtt;
 
 
 	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
