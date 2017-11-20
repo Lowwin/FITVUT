@@ -490,12 +490,19 @@ int listenTo(paramStruct parameters, int nodeNumber)
 	char buffer[65000];
 	sockaddr_in receiveSockAddr;
 	socklen_t size;
+	hostent *host;
 	iphdr *ip;
 	icmphdr *icmpRecv;
 	unsigned short int pid = getpid();
 	timeval tv;
 	int sock;
 	unsigned int ttl = 255;
+	char *addrString;
+	time_t curTimer;
+	char timeBuffer[26];
+	struct tm* tm_info;
+	struct timeval konec, send;
+	double timer;
 	
 	tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
@@ -548,7 +555,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 			if(parameters.verbose)
 			{
 				cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
-					<< " "<< lenght << " bytes from "
+					<< " "<< length << " bytes from "
 					<< nodes[nodeNumber].node.c_str()
 					<< " (" << addrString << ")"
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
