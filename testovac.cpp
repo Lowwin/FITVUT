@@ -66,7 +66,7 @@ typedef struct nodesStruct
 	float hourOk, hourSent;
 	float tOk, tSent;
 	float tLate, tLost;
-	float rtt;
+	float w, r;
 } nodesStruct;
 
 //Input nodes
@@ -437,7 +437,7 @@ void tOutput(int nodeNumber)
 			float lateness = (nodes[nodeNumber].tLate)/(nodes[nodeNumber].tSent/100);
 			cout << std::fixed << std::setprecision(3) << lateness << "% (" 
 				<< std::fixed << std::setprecision(0) << nodes[nodeNumber].tLate
-				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].rtt
+				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].r
 				<< "ms " << endl;
 		}
 		else if(lrint(loss)>=100.0)
@@ -518,7 +518,8 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 	
 	tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
-	nodes[nodeNumber].rtt = parameters.rtt;
+	nodes[nodeNumber].w = parameters.w;
+	nodes[nodeNumber].r = parameters.r;
 
 
 	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
@@ -571,11 +572,11 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 			}
 			
-			if((nodes[nodeNumber].rtt != 0) && ((timer/1000) > nodes[nodeNumber].rtt*2))
+			if((timer/1000) > nodes[nodeNumber].w*2)
 			{
 				nodes[nodeNumber].tLost++;
 			}
-			else if((nodes[nodeNumber].rtt != 0) && ((timer/1000) > nodes[nodeNumber].rtt))
+			else if((nodes[nodeNumber].r != 0) && ((timer/1000) > nodes[nodeNumber].r))
 			{
 				nodes[nodeNumber].hourOk++;
 				nodes[nodeNumber].tLate++;
@@ -585,7 +586,7 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 				nodes[nodeNumber].tOk++;
 				nodes[nodeNumber].hourOk++;
 			}
-			nodes[nodeNumber].rtt=timer/1000;
+			nodes[nodeNumber].w=timer/1000;
 		}
 	}
 }
