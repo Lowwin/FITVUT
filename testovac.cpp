@@ -433,7 +433,7 @@ void tOutput(int nodeNumber)
 			cout << std::fixed << std::setprecision(3) << lateness << "%% (" 
 				<< std::fixed << std::setprecision(0) << nodes[nodeNumber].tLate
 				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].rtt
-				<< "ms"
+				<< "ms";
 		}
 		else if(lrint(loss)>=100.0)
 		{
