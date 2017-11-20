@@ -706,10 +706,11 @@ int doPing6(paramStruct parameters, int nodeNumber)
 		}
 
 		icmp->icmp6_cksum = checksum((u_short *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1);
-		int errsend = sendto(sock,  (char *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1, 0,
-							(sockaddr *)&sendSockAddr, sizeof(sockaddr));
+		int errsend = sendto(sock,  (char *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1,
+							 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr));
 		if(errsend<=0)
 		{	
+			fprintf(stderr, "Sendto: %s\n", gai_strerror(errsend));
 			cout << "DID NOT SEND A THING. Error " << errsend << endl;
 		}
 		
