@@ -626,12 +626,13 @@ int doPing6(paramStruct parameters, int nodeNumber)
     struct addrinfo hints, *servinfo, *p;
     struct sockaddr_in *h;
     int rv;
+	char ipaddr[100];
  
     memset(&hints, 0, sizeof hints);
     hints.ai_family = AF_INET6
     hints.ai_socktype = SOCK_RAW;
  
-    if ( (rv = getaddrinfo( hostname , "http" , &hints , &servinfo)) != 0) 
+    if ( (rv = getaddrinfo( nodes[nodeNumber].node.c_str() , "http" , &hints , &servinfo)) != 0) 
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
@@ -641,9 +642,9 @@ int doPing6(paramStruct parameters, int nodeNumber)
     for(p = servinfo; p != NULL; p = p->ai_next) 
     {
         h = (struct sockaddr_in *) p->ai_addr;
-        strcpy(ip , inet_ntoa( h->sin_addr ) );
+        strcpy(ipaddr , inet_ntoa( h->sin_addr ) );
     }
-	cout << "Ai " << h->ai_addr << " sin " << h->sin_addr;
+	cout << "Ai " << p->ai_addr << " sin " << h->sin_addr;
      
     freeaddrinfo(servinfo);
 
@@ -676,7 +677,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 		gettimeofday((timeval*)timestampBuf,0);
 		gettimeofday(&send,0);
 		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
-		icmp = (icmphdr *) icmpBuffer;
+		icmp = (icmp6_hdr *) icmpBuffer;
 		icmp->icmp6_type = ICMP6_ECHO_REQUEST;
 		icmp->icmp6_code = 0;
 		icmp->icmp6_id = pid;
@@ -695,7 +696,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 			bufPointer++;
 		}
 
-		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1);
+		icmp->icmp6_cksum = checksum((u_short *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1);
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		
