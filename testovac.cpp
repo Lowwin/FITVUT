@@ -782,7 +782,7 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
     	return -1;
     }
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
-
+	cout << " I do listen, I swear!" << endl;
     size = sizeof(sockaddr_in);
 	while(1)
     {
@@ -798,6 +798,7 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
 
 		if (icmpRecv->un.echo.id == pid)
 		{
+			cout << "Got correct packet, YAY" << endl;
 			char recvTime[16];
 			char *bufTimePointer = buffer;
 			bufTimePointer+=20;
