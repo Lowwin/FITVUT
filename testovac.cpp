@@ -159,7 +159,7 @@ bool isNumber(char *str)
 paramStruct paramGet(int argc, char *argv[])
 {
 	//FUJ, tohle jeste upravit nejak rozumne
-    paramStruct actualParameters = {0, 0, 0, 56, 300, 100, 2, 0, 0, 0, 0};
+    paramStruct actualParameters = {0, 0, 0, -1, 300, 100, 2, 0, 0, 0, 0};
     if(argc==2 && !(strcmp(argv[1],"-h")))
         {
 	    actualParameters.help=true;
@@ -993,6 +993,13 @@ int main(int argc, char *argv[])
     	cout << "RTFM! Use -p!\nI quit." << endl;
     	return -1; 
     }
+	if(parameters.dataSize == -1)
+	{
+		if(parameters.udp)
+			parameters.dataSize=64;
+		else
+			parameters.dataSize=56;
+	}
     if(parameters.udp)
 	{
 		for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
