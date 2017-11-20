@@ -418,6 +418,8 @@ void tOutput(int nodeNumber)
 	gettimeofday(&checkTimer,0);
 
 	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
+	if(nodes[nodeNumber].tOk>nodes[nodeNumber].tSent)
+		nodes[nodeNumber].tOK=nodes[nodeNumber].tSent;
 	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
 	{
 		time(&curTimer);
@@ -427,10 +429,10 @@ void tOutput(int nodeNumber)
 		float loss =(nodes[nodeNumber].tSent-nodes[nodeNumber].tOk-nodes[nodeNumber].tLate)/(nodes[nodeNumber].tSent/100);
 		cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 			<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
-		if(nodes[nodeNumber].tLate!=0.0)
+		if(lrint(nodes[nodeNumber].tLate) != 0)
 		{
 			float lateness = (nodes[nodeNumber].tLate)/(nodes[nodeNumber].tSent/100);
-			cout << std::fixed << std::setprecision(3) << lateness << "%% (" 
+			cout << std::fixed << std::setprecision(3) << lateness << "% (" 
 				<< std::fixed << std::setprecision(0) << nodes[nodeNumber].tLate
 				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].rtt
 				<< "ms";
@@ -449,6 +451,8 @@ void tOutput(int nodeNumber)
 	}
 	nodes[nodeNumber].tOk=0;
 	nodes[nodeNumber].tSent=0;
+	nodes[nodeNumber].tLost = 0;
+	nodes[nodeNumber].tLate = 0;
 }
 
 void hourOutput(int nodeNumber)
