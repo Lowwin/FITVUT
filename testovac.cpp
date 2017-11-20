@@ -601,7 +601,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
 	
-	std::thread(listenTo, parameters, nodeNumber);
+	cout << "Do I get here" << endl;
 
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
@@ -687,7 +687,7 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 int main(int argc, char *argv[])
 {
-	vector<std::thread> threads;
+	vector<std::thread> threadsPing, threadsListen;
     paramStruct parameters = paramGet(argc, argv);
 	struct timeval outputTimer;
 	gettimeofday(&outputTimer,0);
@@ -707,11 +707,15 @@ int main(int argc, char *argv[])
 
     for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
-		threads.push_back(std::thread(doPing, parameters, nodeCounter));
+		threadsPing.push_back(std::thread(doPing, parameters, nodeCounter));
+		threadsListen.push_back(std::thread(listenTo, parameters, nodeCounter));
     	//doPing(parameters, nodeCounter);
     }
     
-	for (std::thread& t : threads)
+	for (std::thread& t : threadsPing)
+    	t.join();
+
+	for (std::thread& t : threadsListen)
     	t.join();
 
     
