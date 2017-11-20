@@ -1036,7 +1036,8 @@ int main(int argc, char *argv[])
 			}
 			else if(res->ai_family == AF_INET6)
 			{
-				threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
+				cout << "Not implemented." << endl;
+				return -1;
 			}
 			else
 			{
