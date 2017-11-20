@@ -677,11 +677,11 @@ int doPing6(paramStruct parameters, int nodeNumber)
 		gettimeofday(&send,0);
 		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
 		icmp = (icmphdr *) icmpBuffer;
-		icmp->type = ICMP_ECHO;
-		icmp->code = 0;
-		icmp->un.echo.id = pid;
-		icmp->checksum = 0;
-		icmp->un.echo.sequence = 0;
+		icmp->icmp6_type = ICMP6_ECHO_REQUEST;
+		icmp->icmp6_code = 0;
+		icmp->icmp6_id = pid;
+		icmp->icmp6_cksum = 0;
+		icmp->icmp6_seq = 0;
 
 		bufPointer+= sizeof(icmp);
 		for (int i=0; i<16;i++)
@@ -695,9 +695,10 @@ int doPing6(paramStruct parameters, int nodeNumber)
 			bufPointer++;
 		}
 
-		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
+		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1);
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
+		
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
 
