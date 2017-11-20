@@ -510,6 +510,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 	
 	tv.tv_sec = parameters.w;
     tv.tv_usec = 0;
+	nodes[nodeNumber].rtt = parameters.rtt;
 
 
 	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
@@ -552,8 +553,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 			
 			timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
 			nodes[nodeNumber].rtts.push_back(timer/1000);
-			nodes[nodeNumber].rtt=timer/1000;
-
+			
 			if(parameters.verbose)
 			{
 				cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
@@ -562,13 +562,12 @@ int listenTo(paramStruct parameters, int nodeNumber)
 					<< " (" << addrString << ")"
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 			}
-			nodes[nodeNumber].rtt = parameters.rtt;
 			
-			if((parameters.rtt != 0) && ((timer/1000) > parameters.rtt*2))
+			if((nodes[nodeNumber].rtt != 0) && ((timer/1000) > nodes[nodeNumber].rtt*2))
 			{
 				nodes[nodeNumber].tLost++;
 			}
-			else if((parameters.rtt != 0) && ((timer/1000) > parameters.rtt))
+			else if((nodes[nodeNumber].rtt != 0) && ((timer/1000) > nodes[nodeNumber].rtt))
 			{
 				nodes[nodeNumber].hourOk++;
 				nodes[nodeNumber].tLate++;
@@ -578,6 +577,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 				nodes[nodeNumber].tOk++;
 				nodes[nodeNumber].hourOk++;
 			}
+			nodes[nodeNumber].rtt=timer/1000;
 		}
 	}
 }
