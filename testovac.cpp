@@ -594,152 +594,6 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 	}
 }
 
-int doPing6(paramStruct parameters, int nodeNumber)
-{	
-	socklen_t size;
-	hostent *host;
-	icmp6_hdr *icmp, *icmpRecv;
-	iphdr *ip;
-	int sock, total, lenght;
-	unsigned int ttl = 255;
-	struct sockaddr_in6 sendSockAddr, receiveSockAddr;
-	char buffer[BUFSIZE];
-	timeval tv;
-	char *addrString;
-	in_addr addr;
-	unsigned short int pid = getpid();
-	time_t curTimer;
-	char timeBuffer[26];
-	struct tm* tm_info;
-	struct timeval konec, send;
-	double timer;
-	int datasize = parameters.dataSize;
-
-	struct timeval hourOTimer, tOTimer, checkTimer;
-
-	nodes[nodeNumber].hourOk = 0;
-	nodes[nodeNumber].hourSent = 0;
-	nodes[nodeNumber].tOk = 0;
-	nodes[nodeNumber].tSent = 0;
-
-	gettimeofday(&hourOTimer,0);
-	gettimeofday(&tOTimer,0);
-
-	int sockfd;  
-    struct addrinfo hints, *servinfo, *p;
-    struct sockaddr_in6 *h;
-    int rv;
-	char ipaddr[100];
- 
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family = AF_INET6;
-    hints.ai_socktype = SOCK_RAW;
- 
-    if ( (rv = getaddrinfo( nodes[nodeNumber].node.c_str() , NULL , &hints , &servinfo)) != 0) 
-    {
-        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
-        return 1;
-    }
- 
-    // loop through all the results and connect to the first we can
-    for(p = servinfo; p != NULL; p = p->ai_next) 
-    {
-        h = (struct sockaddr_in6 *) p->ai_addr;
-        //strcpy(ipaddr , inet_ntoa( h->sin6_addr ) );
-    }
-	cout<<"trace to "<<nodes[nodeNumber].node.c_str()<<" ("
-	<<inet_ntop(servinfo->ai_family, &((struct sockaddr_in6*)servinfo->ai_addr)->sin6_addr.s6_addr, ipaddr, 100)<<")"<<endl;
-     
-    freeaddrinfo(servinfo);
-
-	if ((sock = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) == -1)
-	{
-    	cerr << "Unable to create socket." << endl;
-    	return -1;
-	}
-	
-	if(setsockopt(sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (const char *)&ttl, sizeof(ttl)) != 0)
-	{
-		cerr << "Error setsockopt IPv6 ping" << endl;
-		return -1;
-	}
-	
-	/*memset(&sendSockAddr, 0, sizeof(sendSockAddr));
-	sendSockAddr.sin6_family = AF_INET6;
-	sendSockAddr.sin6_port = 0;
-	inet_pton(AF_INET6, nodes[nodeNumber].node.c_str(),&(sendSockAddr.sin6_addr));*/
-
-	memset(&sendSockAddr, 0, sizeof(sendSockAddr));
-	// copy address
-	memcpy(&sendSockAddr, servinfo->ai_addr, servinfo->ai_addrlen);
-
-	while (1)
-	{
-		timer =0;
-		char icmpBuffer[65000];
-		char *bufPointer = icmpBuffer;
-		char str[datasize-16];
-		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
-
-		for (int i = 0; i < datasize; ++i)
-		{
-			str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-		}
-		char timestampBuf[16];
-		gettimeofday((timeval*)timestampBuf,0);
-		gettimeofday(&send,0);
-		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
-		icmp = (icmp6_hdr *) icmpBuffer;
-		icmp->icmp6_type = ICMP6_ECHO_REQUEST;
-		icmp->icmp6_code = 0;
-		icmp->icmp6_id = pid;
-		icmp->icmp6_cksum = 0;
-		icmp->icmp6_seq = 0;
-
-		bufPointer+= sizeof(icmp);
-		for (int i=0; i<16;i++)
-		{
-			*bufPointer = timestampBuf[i];
-			bufPointer++;
-		}
-		for (int counter=0; counter<strlen(str);counter++)
-		{
-			*bufPointer = str[counter];
-			bufPointer++;
-		}
-
-		icmp->icmp6_cksum = checksum((u_short *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1);
-		int errsend = sendto(sock,  (char *)icmpBuffer, sizeof(icmp6_hdr)+sizeof(str)-1,
-							 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr));
-		if(errsend<=0)
-		{	
-			fprintf(stderr, "Sendto: %s\n", gai_strerror(errsend));
-			return -1;
-		}
-		
-		nodes[nodeNumber].hourSent++;
-		nodes[nodeNumber].tSent++;
-
-    	//Print statistics, if time is correct
-    	gettimeofday(&checkTimer, 0);
-		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
-		{
-			tOutput(nodeNumber); 
-			gettimeofday(&tOTimer,0);
-		}	
-		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
-		{
-			hourOutput(nodeNumber); 
-			gettimeofday(&hourOTimer,0);
-		}
-    	
-		usleep(parameters.i*1000);
-	}
-	close(sock);
-	free(icmp);
-	return 0;
-}
-
 /*
 **Sends packets to addresses
 */
@@ -839,7 +693,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	return 0;
 }
 
-int listenToUdp4(paramStruct parameters)
+int serverUdp4(paramStruct parameters)
 {
 	int length;
 	int recvBufSize=255*4 + sizeof(iphdr);
@@ -891,6 +745,104 @@ int listenToUdp4(paramStruct parameters)
 		{
 			cout << "Send Error" << endl;
 			return -1;
+		}
+	}
+}
+
+int listenToUdp4(paramStruct parameters, int nodeNumber)
+{
+	int length;
+	int recvBufSize=255*4 + sizeof(iphdr);
+	char buffer[recvBufSize];
+	sockaddr_in receiveSockAddr;
+	socklen_t size;
+	hostent *host;
+	iphdr *ip;
+	icmphdr *icmpRecv;
+	unsigned short int pid = getpid();
+	timeval tv;
+	int sock;
+	unsigned int ttl = 255;
+	char *addrString;
+	time_t curTimer;
+	char timeBuffer[26];
+	struct tm* tm_info;
+	struct timeval konec, send;
+	double timer;
+	
+	tv.tv_sec = parameters.w;
+    tv.tv_usec = 0;
+	nodes[nodeNumber].w = parameters.w;
+	nodes[nodeNumber].r = parameters.rtt;
+
+
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+    {
+    	cerr << "Error when creating listen socket" << endl;
+    	return -1;
+    }
+	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+
+    size = sizeof(sockaddr_in);
+	while(1)
+    {
+		length = 0;
+		if ((length = recvfrom(sock, buffer, recvBufSize, 0, (sockaddr *)&receiveSockAddr, &size)) <= 0)
+		{
+			cerr << "Error when accepting data." << endl;
+			break;
+		}
+
+		ip = (iphdr *) buffer;
+		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
+
+		if (icmpRecv->un.echo.id == pid)
+		{
+			char recvTime[16];
+			char *bufTimePointer = buffer;
+			bufTimePointer+=20;
+			memcpy(recvTime,bufTimePointer,sizeof(timeval));
+
+			struct timeval rTime = (timeval &)recvTime;
+
+			addrString = strdup(inet_ntoa(receiveSockAddr.sin_addr));
+			host = gethostbyaddr(&receiveSockAddr.sin_addr, 4, AF_INET);
+					
+			time(&curTimer);
+			tm_info = localtime(&curTimer);
+			strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
+
+			gettimeofday(&konec,0);
+			
+			timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
+			nodes[nodeNumber].rtts.push_back(timer/1000);
+
+			int dataPartSize = length - sizeof(iphdr);
+			
+			if(parameters.verbose)
+			{
+				cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
+					<< " "<< dataPartSize << " bytes from "
+					<< nodes[nodeNumber].node.c_str()
+					<< " (" << addrString << ")"
+					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
+			}
+			
+			if((timer/1000) > nodes[nodeNumber].w*2)
+			{
+				nodes[nodeNumber].tLost++;
+			}
+			else if((nodes[nodeNumber].r != 0) && ((timer/1000) > nodes[nodeNumber].r))
+			{
+				nodes[nodeNumber].hourOk++;
+				nodes[nodeNumber].tLate++;
+			}
+			else
+			{
+				nodes[nodeNumber].tOk++;
+				nodes[nodeNumber].hourOk++;
+			}
+			nodes[nodeNumber].w=timer/1000;
 		}
 	}
 }
@@ -1039,7 +991,7 @@ int main(int argc, char *argv[])
 
 	if(parameters.listenUdp)
 	{
-		threadsListen.push_back(std::thread(listenToUdp4, parameters));
+		threadsListen.push_back(std::thread(serverUdp4, parameters));
 	}
 
     if(parameters.udp)
