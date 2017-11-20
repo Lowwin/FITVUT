@@ -417,7 +417,6 @@ void tOutput(int nodeNumber)
 
 	gettimeofday(&checkTimer,0);
 
-	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
 	if(nodes[nodeNumber].tOk>nodes[nodeNumber].tSent)
 		nodes[nodeNumber].tOk=nodes[nodeNumber].tSent;
 	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
@@ -467,7 +466,6 @@ void hourOutput(int nodeNumber)
 	time(&curTimer);
     tm_info = localtime(&curTimer);
     strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
-	cout << "Hour OK: " << nodes[nodeNumber].hourOk << " Sent: " << nodes[nodeNumber].hourSent << endl;
 	if(nodes[nodeNumber].hourOk>nodes[nodeNumber].hourSent)
 		nodes[nodeNumber].hourOk=nodes[nodeNumber].hourSent;
 	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
