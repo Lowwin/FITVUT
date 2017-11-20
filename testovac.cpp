@@ -795,7 +795,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		timer =0;
 		char icmpBuffer[65000];
 		char *bufPointer = icmpBuffer;
-		cout << "Datasize: " << datasize << endl;
+		
 		char str[datasize-16];
 		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
@@ -825,6 +825,9 @@ int doPing4(paramStruct parameters, int nodeNumber)
 			*bufPointer = str[counter];
 			bufPointer++;
 		}
+
+		cout << "ICMP head " << sizeof(icmphdr) << " String " << sizeof(str)-1 
+		<< "Datasize: " << datasize << endl;
 
 		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
