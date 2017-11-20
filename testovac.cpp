@@ -852,6 +852,122 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	return 0;
 }
 
+
+int doPingUdp4(paramStruct parameters, int nodeNumber)
+{
+	nodes[nodeNumber].hourOk = 0;
+	nodes[nodeNumber].hourSent = 0;
+	nodes[nodeNumber].tOk = 0;
+	nodes[nodeNumber].tSent = 0;	
+	socklen_t size;
+	hostent *host;
+	icmphdr *icmp, *icmpRecv;
+	//iphdr *ip;
+	int sock, total, lenght;
+	unsigned int ttl = 255;
+	sockaddr_in sendSockAddr, receiveSockAddr;
+	char buffer[BUFSIZE];
+	fd_set mySet;
+	timeval tv;
+	char *addrString;
+	in_addr addr;
+	unsigned short int pid = getpid(), p;
+	time_t curTimer;
+	char timeBuffer[26];
+	struct tm* tm_info;
+	struct timeval konec, send;
+	double timer;
+	int datasize = parameters.dataSize;
+
+	struct timeval hourOTimer, tOTimer, checkTimer;
+
+	gettimeofday(&hourOTimer,0);
+	gettimeofday(&tOTimer,0);
+
+	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
+	{
+		cerr << "Bad address." << endl;
+	    return -1;
+	}
+	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
+	{
+    	cerr << "Unable to create socket." << endl;
+    	return -1;
+	}
+	
+	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+	
+	sendSockAddr.sin_family = AF_INET;
+	sendSockAddr.sin_port = parameters.portUdp;
+	sendSockAddr.sin_addr.s_addr = INADDR_ANY;
+
+	if(bind(s, (sockaddr*)&sendSockAddr, sizeof(sendSockAddr)) <= -1)
+	{
+		cerr << "Unable to bind socket. " <<sterror(errno) << endl;
+		return -1;
+	}
+
+	while (1)
+	{
+		timer =0;
+		char icmpBuffer[65000];
+		char *bufPointer = icmpBuffer;
+		
+		char str[datasize-16+1];
+		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
+
+		for (int i = 0; i < datasize; ++i)
+		{
+			str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+		char timestampBuf[16];
+		gettimeofday((timeval*)timestampBuf,0);
+
+		icmp = (icmphdr *) icmpBuffer;
+		icmp->type = ICMP_ECHO;
+		icmp->code = 0;
+		icmp->un.echo.id = pid;
+		icmp->checksum = 0;
+		icmp->un.echo.sequence = 0;
+
+		bufPointer+= sizeof(icmp);
+		for (int i=0; i!=sizeof(timestampBuf);i++)
+		{
+			*bufPointer = timestampBuf[i];
+			bufPointer++;
+		}
+		for (int counter=0; counter!=strlen(str);counter++)
+		{
+			*bufPointer = str[counter];
+			bufPointer++;
+		}
+
+		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf));
+		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+			cout << "DID NOT SEND A THING." << endl;
+		nodes[nodeNumber].hourSent++;
+		nodes[nodeNumber].tSent++;
+
+    	//Print statistics, if time is correct
+    	gettimeofday(&checkTimer, 0);
+		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
+		{
+			tOutput(nodeNumber); 
+			gettimeofday(&tOTimer,0);
+		}	
+		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
+		{
+			hourOutput(nodeNumber); 
+			gettimeofday(&hourOTimer,0);
+		}
+    	
+		usleep(parameters.i*1000);
+	}
+	close(sock);
+	free(icmp);
+	return 0;
+}
+
 int main(int argc, char *argv[])
 {
 	vector<std::thread> threadsPing, threadsListen;
@@ -876,7 +992,29 @@ int main(int argc, char *argv[])
     	return -1; 
     }
     if(parameters.udp)
-    	cout << "Well, not gonna use that silly UDP, but thanks.\n";
+	{
+		if(getaddrinfo(nodes[nodeCounter].node.c_str(), NULL, &hint, &res))
+		{
+			cerr << "Invalid address." << endl;
+			return -1;
+		}
+		if(res->ai_family == AF_INET)
+		{
+			threadsPing.push_back(std::thread(doPingUdp4, parameters, nodeCounter));
+			//threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
+		}
+		else if(res->ai_family == AF_INET6)
+		{
+			//threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
+		}
+		else
+		{
+			cout << "What is this address?" << endl;
+			return -1;
+		}
+		memset(&hint, '\0', sizeof hint);
+	}
+    	
 
     for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
@@ -887,13 +1025,11 @@ int main(int argc, char *argv[])
 		}
 		if(res->ai_family == AF_INET)
 		{
-			cout << "Jsem IPv4" << endl;
 			threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
 			threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
 		}
 		else if(res->ai_family == AF_INET6)
 		{
-			cout << "Jsem IPv6" <<endl;
 			threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
 		}
 		else
