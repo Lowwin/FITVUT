@@ -434,7 +434,7 @@ void tOutput(int nodeNumber)
 			cout << std::fixed << std::setprecision(3) << lateness << "% (" 
 				<< std::fixed << std::setprecision(0) << nodes[nodeNumber].tLate
 				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].rtt
-				<< "ms";
+				<< "ms " << endl;
 		}
 		else if(lrint(loss)>=100.0)
 		{
@@ -488,7 +488,7 @@ void hourOutput(int nodeNumber)
 }
 
 
-int listenTo(paramStruct parameters, int nodeNumber)
+int listenTo4(paramStruct parameters, int nodeNumber)
 {
 	int length;
 	char buffer[65000];
@@ -585,7 +585,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 /*
 **Sends packets to addresses
 */
-int doPing(paramStruct parameters, int nodeNumber)
+int doPing4(paramStruct parameters, int nodeNumber)
 {
 	nodes[nodeNumber].hourOk = 0;
 	nodes[nodeNumber].hourSent = 0;
@@ -716,8 +716,8 @@ int main(int argc, char *argv[])
 
     for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
-		threadsPing.push_back(std::thread(doPing, parameters, nodeCounter));
-		threadsListen.push_back(std::thread(listenTo, parameters, nodeCounter));
+		threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
+		threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
     	//doPing(parameters, nodeCounter);
     }
     
