@@ -624,7 +624,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 
 	int sockfd;  
     struct addrinfo hints, *servinfo, *p;
-    struct sockaddr_in *h;
+    struct sockaddr_in6 *h;
     int rv;
 	char ipaddr[100];
  
@@ -645,6 +645,8 @@ int doPing6(paramStruct parameters, int nodeNumber)
         strcpy(ipaddr , inet_ntoa( h->sin_addr ) );
     }
 	cout << "Sendto " << ipaddr <<"  "<< servinfo->ai_addr<< endl;
+	cout<<"trace to "<<nodes[nodeNumber].node.c_str()<<" ("
+	<<inet_ntop(servinfo->ai_family, &((struct sockaddr_in6*)servinfo->ai_addr)->sin6_addr.s6_addr, ipaddr, 100)<<")"<<endl;
      
     freeaddrinfo(servinfo);
 
