@@ -1002,12 +1002,10 @@ int main(int argc, char *argv[])
 			}
 			if(res->ai_family == AF_INET)
 			{
-				threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
-				threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
+				threadsPing.push_back(std::thread(doPingUdp4, parameters, nodeCounter));
 			}
 			else if(res->ai_family == AF_INET6)
 			{
-				threadsPing.push_back(std::thread(doPing6,parameters,nodeCounter));
 			}
 			else
 			{
