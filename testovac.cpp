@@ -543,7 +543,7 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 		ip = (iphdr *) buffer;
 		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
 
-		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid) && (length==(parameters.dataSize-1 + HDRSSIZE + 16)))
+		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid) && (length==(parameters.dataSize + HDRSSIZE)))
 		{
 			char recvTime[16];
 			char *bufTimePointer = buffer;
