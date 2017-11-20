@@ -699,6 +699,12 @@ int main(int argc, char *argv[])
 	vector<std::thread> threadsPing, threadsListen;
     paramStruct parameters = paramGet(argc, argv);
 	struct timeval outputTimer;
+	struct addrinfo hint, *res = NULL;
+
+	memset(&hint, '\0', sizeof hint);
+
+    hint.ai_family = PF_UNSPEC;
+
 	gettimeofday(&outputTimer,0);
 	if(parameters.error==1)
 		return -1;
@@ -716,9 +722,27 @@ int main(int argc, char *argv[])
 
     for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
     {
-		threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
-		threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
-    	//doPing(parameters, nodeCounter);
+		if(getaddrinfo(nodes[nodeCounter].node, NULL, &hint, &res))
+		{
+			cerr << "Invalid address." << endl;
+			return -1;
+		}
+		if(res->ai_family == AF_INET)
+		{
+			cout << "Jsem IPv4" << endl;
+			threadsPing.push_back(std::thread(doPing4, parameters, nodeCounter));
+			threadsListen.push_back(std::thread(listenTo4, parameters, nodeCounter));
+		}
+		else if(res->ai_family == AF_INET6)
+		{
+			cout << "Jsem IPv6" <<endl;
+		}
+		else
+		{
+			cout << "What is this address?" << endl;
+			return -1;
+		}
+		memset(&hint, '\0', sizeof hint);
     }
     
 	for (std::thread& t : threadsPing)
