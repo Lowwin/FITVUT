@@ -644,7 +644,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
         h = (struct sockaddr_in *) p->ai_addr;
         strcpy(ipaddr , inet_ntoa( h->sin_addr ) );
     }
-	cout << "Ai " << p->ai_addr << " sin " << h->sin_addr;
+	//cout << "Ai " << p->ai_addr << " sin " << h->sin_addr;
      
     freeaddrinfo(servinfo);
 
