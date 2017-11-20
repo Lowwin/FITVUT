@@ -50,7 +50,7 @@ std::string HelpMsg =
 	"-s <size>         Size of data to send.\n"
 	"-t <interval>     Interval in which losing packets is reported (seconds). Default 300s.\n"
 	"-i <interval>     Interval in which test packets will be send (milliseconds). Default 100ms.\n"
-	"-w <timeout>      Time in which program waits for response when not retrieving one (seconds). Default 2s.\n"
+	"-w <timeout>      Time in which program waits for response when not retrieving one (seconds). Default 2s, then 2x calculated RTT.\n"
 	"-p <port>         UPD port.\n"
 	"-l <port>         UDP port to listen on.\n"
 	"-r <value>        RTT value, if RTT > input value, packets exceeding RTT threshold will be reported.\n"
@@ -552,6 +552,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 			
 			timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
 			nodes[nodeNumber].rtts.push_back(timer/1000);
+			nodes[nodeNumber].rtt=timer/1000;
 
 			if(parameters.verbose)
 			{
