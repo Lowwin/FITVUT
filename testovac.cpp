@@ -946,7 +946,7 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		else
-			cout << "I did it! Sent a packet with udp." << endl;
+			cout << "I did it! Sent a packet with udp. Size" << sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf) << endl;
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
 
