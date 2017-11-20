@@ -641,8 +641,8 @@ int doPing6(paramStruct parameters, int nodeNumber)
     // loop through all the results and connect to the first we can
     for(p = servinfo; p != NULL; p = p->ai_next) 
     {
-        h = (struct sockaddr_in *) p->ai_addr;
-        strcpy(ipaddr , inet_ntoa( h->sin_addr ) );
+        h = (struct sockaddr_in6 *) p->ai_addr;
+        //strcpy(ipaddr , inet_ntoa( h->sin6_addr ) );
     }
 	cout << "Sendto " << ipaddr <<"  "<< servinfo->ai_addr<< endl;
 	cout<<"trace to "<<nodes[nodeNumber].node.c_str()<<" ("
