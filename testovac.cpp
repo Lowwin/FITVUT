@@ -945,6 +945,8 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf));
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
+		else
+			cout << "I did it! Sent a packet with udp." << endl;
 		nodes[nodeNumber].hourSent++;
 		nodes[nodeNumber].tSent++;
 
