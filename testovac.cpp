@@ -938,6 +938,10 @@ int doPingUdp4(paramStruct parameters, int nodeNumber)
 	}
 	
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+	
+	sendSockAddr.sin_family = AF_INET;
+	sendSockAddr.sin_port = parameters.portUdp;
+	sendSockAddr.sin_addr.s_addr = INADDR_ANY;
 
 	while (1)
 	{
