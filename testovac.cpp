@@ -860,7 +860,7 @@ int listenToUdp4(paramStruct parameters)
     	cerr << "Error when creating listen socket" << endl;
     	return -1;
     }
-	//setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
+	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
 
 	receiveSockAddr.sin_family = AF_INET;
 	receiveSockAddr.sin_port = parameters.listenUdp;
@@ -1047,7 +1047,7 @@ int main(int argc, char *argv[])
 	{
 		threadsListen.push_back(std::thread(listenToUdp4, parameters));
 	}
-	
+
     if(parameters.udp)
 	{
 		for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
