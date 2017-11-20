@@ -820,7 +820,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 			*bufPointer = timestampBuf[i];
 			bufPointer++;
 		}
-		cout << "String size "<< strlen(str) << endl;
+		cout << "String size "<< strlen(str) << " data size "<<datasize << endl;
 		for (int counter=0; counter<strlen(str);counter++)
 		{
 			*bufPointer = str[counter];
@@ -828,7 +828,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		}
 
 		cout << "ICMP head " << sizeof(icmphdr) << " String " << sizeof(str)-1 << " ip hdr" << sizeof(iphdr) 
-			<< " Timestamp 16" << " icmpBuffer" << sizeof(icmpBuffer) << endl;
+			<< " Timestamp 16" << endl;
 
 		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf));
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
