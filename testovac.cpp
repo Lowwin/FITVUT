@@ -414,11 +414,15 @@ void tOutput(int nodeNumber)
 	struct timeval checkTimer;
 	struct tm* tm_info;
 	char timeBuffer[26];
+	float overflowPacks = 0.0;
 
 	gettimeofday(&checkTimer,0);
 
 	if(nodes[nodeNumber].tOk>nodes[nodeNumber].tSent)
+	{	
+		overflowPacks = nodes[nodeNumber].tOk-nodes[nodeNumber].tSent;
 		nodes[nodeNumber].tOk=nodes[nodeNumber].tSent;
+	}
 	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
 	{
 		time(&curTimer);
@@ -448,10 +452,10 @@ void tOutput(int nodeNumber)
 				<< " packet lost" << endl;
 		}
 	}
-	nodes[nodeNumber].tOk=0;
-	nodes[nodeNumber].tSent=0;
-	nodes[nodeNumber].tLost = 0;
-	nodes[nodeNumber].tLate = 0;
+	nodes[nodeNumber].tOk   = overflowPacks;
+	nodes[nodeNumber].tSent = 0.0;
+	nodes[nodeNumber].tLost = 0.0;
+	nodes[nodeNumber].tLate = 0.0;
 }
 
 void hourOutput(int nodeNumber)
@@ -460,6 +464,7 @@ void hourOutput(int nodeNumber)
 	struct timeval checkTimer;
 	struct tm* tm_info;
 	char timeBuffer[26];
+	float overflowPacks =0.0;
 	
 	gettimeofday(&checkTimer,0);
 	
@@ -467,7 +472,10 @@ void hourOutput(int nodeNumber)
     tm_info = localtime(&curTimer);
     strftime(timeBuffer, 26, "%Y-%m-%d %H:%M:%S", tm_info);
 	if(nodes[nodeNumber].hourOk>nodes[nodeNumber].hourSent)
+	{
+		overflowPacks=nodes[nodeNumber].hourOk-nodes[nodeNumber].hourSent;
 		nodes[nodeNumber].hourOk=nodes[nodeNumber].hourSent;
+	}
 	float loss =(nodes[nodeNumber].hourSent-nodes[nodeNumber].hourOk)/(nodes[nodeNumber].hourSent/100);
 	cout << timeBuffer << "." << std::fixed << std::setprecision(2)
 		<< lrint(checkTimer.tv_usec/1000)<< " " << nodes[nodeNumber].node <<": ";
@@ -483,8 +491,8 @@ void hourOutput(int nodeNumber)
 			<< statistics << " ms" << endl;
 	}
 	nodes[nodeNumber].rtts.clear();
-	nodes[nodeNumber].hourOk=0;
-	nodes[nodeNumber].hourSent=0;
+	nodes[nodeNumber].hourOk   = overflowPacks;
+	nodes[nodeNumber].hourSent = 0.0;
 }
 
 
