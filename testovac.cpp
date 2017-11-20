@@ -698,7 +698,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 		// 	bufPointer++;
 		// }
 
-		icmp->icmp6_cksum = checksum((u_short *)icmp, sizeof(icmp6_hdr);
+		icmp->icmp6_cksum = checksum((u_short *)icmp, sizeof(icmp6_hdr));
 		if(sendto(sock,  (char *)icmp, sizeof(icmp6_hdr), 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		
