@@ -658,10 +658,14 @@ int doPing6(paramStruct parameters, int nodeNumber)
 	
 	setsockopt(sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (const char *)&ttl, sizeof(ttl));
 	
-	memset(&sendSockAddr, 0, sizeof(sendSockAddr));
+	/*memset(&sendSockAddr, 0, sizeof(sendSockAddr));
 	sendSockAddr.sin6_family = AF_INET6;
 	sendSockAddr.sin6_port = 0;
-	inet_pton(AF_INET6, nodes[nodeNumber].node.c_str(),&(sendSockAddr.sin6_addr));
+	inet_pton(AF_INET6, nodes[nodeNumber].node.c_str(),&(sendSockAddr.sin6_addr));*/
+
+	memset(&sendSockAddr, 0, sizeof(sockaddr_in6));
+	// copy address
+	memcpy(&sendSockAddr, servinfo->ai_addr, servinfo->ai_addrlen);
 
 	while (1)
 	{
