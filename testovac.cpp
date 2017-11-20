@@ -839,7 +839,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	return 0;
 }
 
-int listenToUdp4(paramStruct parameters, int nodeNumber)
+int listenToUdp4(paramStruct parameters)
 {
 	int length;
 	int recvBufSize=255*4 + sizeof(iphdr);
@@ -853,11 +853,6 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
 	timeval tv;
 	int sock;
 	unsigned int ttl = 255;
-	
-	tv.tv_sec = parameters.w;
-    tv.tv_usec = 0;
-	nodes[nodeNumber].w = parameters.w;
-	nodes[nodeNumber].r = parameters.rtt;
 
 
 	if ((sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
@@ -890,9 +885,9 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
 
 		icmpRecv->type = ICMP_ECHOREPLY;
         icmpRecv->checksum = 0;
-        icmpRecv->checksum = checksum((u_short *)icmpRecvHdr, length);
+        icmpRecv->checksum = checksum((u_short *)icmpRecv, length);
 
-		if (sendto(s, buffer, length, 0, (sockaddr*)&receiveSockAddr, sizeof(receiveSockAddr)) <= 0)
+		if (sendto(sock, buffer, length, 0, (sockaddr*)&receiveSockAddr, sizeof(receiveSockAddr)) <= 0)
 		{
 			cout << "Send Error" << endl;
 			return -1;
@@ -1075,7 +1070,7 @@ int main(int argc, char *argv[])
 	}
 	if(parameters.listenUdp)
 	{
-		threadsListen.push_back(std::thread(listenToUdp4, parameters, nodeCounter));
+		threadsListen.push_back(std::thread(listenToUdp4, parameters));
 	}
 	else
 	{
