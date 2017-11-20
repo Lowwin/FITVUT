@@ -868,7 +868,7 @@ int listenToUdp4(paramStruct parameters, int nodeNumber)
 	//setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
 
 	receiveSockAddr.sin_family = AF_INET;
-	receiveSockAddr.sin_port = parameters.portUdp;
+	receiveSockAddr.sin_port = parameters.listenUdp;
 	receiveSockAddr.sin_addr.s_addr = INADDR_ANY;
 
 	if(bind(sock, (sockaddr*)&receiveSockAddr, sizeof(receiveSockAddr)) <= -1)
