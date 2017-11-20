@@ -773,6 +773,8 @@ int doPing4(paramStruct parameters, int nodeNumber)
 	gettimeofday(&hourOTimer,0);
 	gettimeofday(&tOTimer,0);
 
+
+	cout << "ICMP header size: " <<sizeof(icmphdr) << endl;
 	if ((host = gethostbyname(nodes[nodeNumber].node.c_str())) == NULL)
 	{
 		cerr << "Bad address." << endl;
