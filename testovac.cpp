@@ -419,7 +419,7 @@ void tOutput(int nodeNumber)
 
 	cout << "OK: " << nodes[nodeNumber].tOk << " Sent: " << nodes[nodeNumber].tSent << endl;
 	if(nodes[nodeNumber].tOk>nodes[nodeNumber].tSent)
-		nodes[nodeNumber].tOK=nodes[nodeNumber].tSent;
+		nodes[nodeNumber].tOk=nodes[nodeNumber].tSent;
 	if(nodes[nodeNumber].tOk != nodes[nodeNumber].tSent)
 	{
 		time(&curTimer);
