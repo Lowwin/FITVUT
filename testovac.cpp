@@ -644,7 +644,6 @@ int doPing6(paramStruct parameters, int nodeNumber)
         h = (struct sockaddr_in6 *) p->ai_addr;
         //strcpy(ipaddr , inet_ntoa( h->sin6_addr ) );
     }
-	cout << "Sendto " << ipaddr <<"  "<< servinfo->ai_addr<< endl;
 	cout<<"trace to "<<nodes[nodeNumber].node.c_str()<<" ("
 	<<inet_ntop(servinfo->ai_family, &((struct sockaddr_in6*)servinfo->ai_addr)->sin6_addr.s6_addr, ipaddr, 100)<<")"<<endl;
      
@@ -656,7 +655,11 @@ int doPing6(paramStruct parameters, int nodeNumber)
     	return -1;
 	}
 	
-	setsockopt(sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (const char *)&ttl, sizeof(ttl));
+	if(setsockopt(sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (const char *)&ttl, sizeof(ttl)) != 0)
+	{
+		cerr << "Error setsockopt IPv6 ping" << endl;
+		return -1;
+	}
 	
 	/*memset(&sendSockAddr, 0, sizeof(sendSockAddr));
 	sendSockAddr.sin6_family = AF_INET6;
