@@ -796,7 +796,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		char icmpBuffer[65000];
 		char *bufPointer = icmpBuffer;
 		
-		char str[datasize-16];
+		char str[datasize-15];
 		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
 		for (int i = 0; i < datasize; ++i)
@@ -815,7 +815,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		icmp->un.echo.sequence = 0;
 
 		bufPointer+= sizeof(icmp);
-		for (int i=0; i<16;i++)
+		for (int i=0; i<=16;i++)
 		{
 			*bufPointer = timestampBuf[i];
 			bufPointer++;
@@ -827,7 +827,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 			bufPointer++;
 		}
 
-		cout << "ICMP head " << sizeof(icmphdr) << " String " << sizeof(str)-1 
+		cout << "ICMP head " << sizeof(icmphdr) << " String " << sizeof(str)-1 << " ip hdr" << sizeof(iphdr) 
 			<< " Timestamp 16" << " icmpBuffer" << sizeof(icmpBuffer) << endl;
 
 		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
