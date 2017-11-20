@@ -1,0 +1,59 @@
+.TH TESTOVAC 1
+.SH Nazev
+testovac \- Měření zrátovosti a RTT na uzlech
+.SH Pouziti
+.B ./testovac
+[\fB\-h\fR]
+[\fB\-u\fR]
+[\fB\-t\fR \fI<interval>\fR]
+[\fB\-i\fR \fI<interval>\fR]
+[\fB\-p\fR \fI<port>\fR]
+[\fB\-l\fR \fI<port>\fR]
+[\fB\-s\fR \fI<size>\fR]
+[\fB\-t\fR \fI<value>\fR]
+.IR <uzel1>
+.IR <uzel2>
+.IR <uzel3>
+.IR ...
+.SH POPIS
+.B testovac
+Měří ztrátovost a RTT na zadaných uzlech.
+Může být také spuštěn jako
+.B server
+pomocí UDP
+Protokolu kde poté naslouchá na zadaném portu a odpovídá
+na UDP ICMP packety.
+
+Program původně odesílá packety a čeká na jejich odpovědi
+Podle počtu přijatých odpovědí vypočítá ztrátovost.
+.SH OPTIONS
+.TP
+.BR \-h\fR
+Zobrazí nápovědu
+.TP
+.BR \-u\fR
+Zapne testování pomocí protokolu UDP. (Musí být zadaný port
+.BR \-p\fR)
+.TP
+.BR \-p\ \fI<port>\fR
+Port pro testování protokolem UDP.
+.TP
+.BR \-s\ \fI<size>\fR
+Nastaví velikost dat, která budou odeslána. Výchozí hodnota je 56B.
+.TP
+.BR \-t\ \fI<interval>\fR
+Nastaví v sekundách interval za který se vyhodnotí ztrátovost, výchozí nastavení je 300s.
+.TP
+.BR \-i\ \fI<interval>\fR
+Interval v ms jak často se budou posílat testovací zprávy, výchozí hodnota je 100ms.
+.TP
+.BR \-w\ \fI<timeout>\fR
+Doba jak dlouho se čeká na odpověď v sekundách, výchozí hodnota je 2s..TP
+.TP
+.BR \-l\ \fI<port>\fR
+Zapnutí serveru pro naslouchání na daném portu.
+.TP
+.BR \-r\ \fI<value>\fR
+Hodnota RTT, pokud je překročena, reportuje se.
+.BR \fI<uzel>\fR
+IPv4/hostname adresa uzlu
