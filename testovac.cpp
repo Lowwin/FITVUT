@@ -796,7 +796,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		char icmpBuffer[65000];
 		char *bufPointer = icmpBuffer;
 		
-		char str[datasize-15];
+		char str[datasize+1-16];
 		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
 		for (int i = 0; i < datasize; ++i)
@@ -830,7 +830,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		cout << "ICMP head " << sizeof(icmphdr) << " String " << sizeof(str)-1 << " ip hdr" << sizeof(iphdr) 
 			<< " Timestamp 16" << " icmpBuffer" << sizeof(icmpBuffer) << endl;
 
-		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
+		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1+sizeof(timestampBuf));
 		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
 			cout << "DID NOT SEND A THING." << endl;
 		nodes[nodeNumber].hourSent++;
