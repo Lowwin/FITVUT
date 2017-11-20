@@ -628,11 +628,11 @@ int doPing6(paramStruct parameters, int nodeNumber)
     int rv;
 	char ipaddr[100];
  
-    memset(&hints, 0, sizeof hints);
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_RAW;
  
-    if ( (rv = getaddrinfo( nodes[nodeNumber].node.c_str() , "http" , &hints , &servinfo)) != 0) 
+    if ( (rv = getaddrinfo( nodes[nodeNumber].node.c_str() , NULL , &hints , &servinfo)) != 0) 
     {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
