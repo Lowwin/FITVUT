@@ -440,7 +440,7 @@ void tOutput(int nodeNumber)
 				<< ") packets exceeded RTT threshold " << nodes[nodeNumber].r
 				<< "ms " << endl;
 		}
-		else if(lrint(loss)>=100.0)
+		if(lrint(loss)>=100.0)
 		{
 			cout << "status down" << endl;
 		}
