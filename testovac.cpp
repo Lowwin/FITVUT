@@ -629,7 +629,7 @@ int doPing6(paramStruct parameters, int nodeNumber)
 	char ipaddr[100];
  
     memset(&hints, 0, sizeof hints);
-    hints.ai_family = AF_INET6
+    hints.ai_family = AF_INET6;
     hints.ai_socktype = SOCK_RAW;
  
     if ( (rv = getaddrinfo( nodes[nodeNumber].node.c_str() , "http" , &hints , &servinfo)) != 0) 
