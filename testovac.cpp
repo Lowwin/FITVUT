@@ -1042,6 +1042,12 @@ int main(int argc, char *argv[])
 		else
 			parameters.dataSize=56;
 	}
+
+	if(parameters.listenUdp)
+	{
+		threadsListen.push_back(std::thread(listenToUdp4, parameters));
+	}
+	
     if(parameters.udp)
 	{
 		for(int nodeCounter = 0; nodeCounter<nodes.size(); nodeCounter++)
@@ -1067,10 +1073,6 @@ int main(int argc, char *argv[])
 			}
 			memset(&hint, '\0', sizeof hint);
 		}
-	}
-	if(parameters.listenUdp)
-	{
-		threadsListen.push_back(std::thread(listenToUdp4, parameters));
 	}
 	else
 	{
