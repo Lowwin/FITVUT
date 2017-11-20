@@ -34,6 +34,7 @@
 #include <thread>
 
 #define BUFSIZE 1024
+#define HDRSSIZE 28 //iphdr+icmphdr
 
 using namespace std;
 
@@ -542,7 +543,7 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 		ip = (iphdr *) buffer;
 		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
 
-		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid))
+		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid) && (length==(parameters.dataSize-1 + HDRSSIZE + 16)))
 		{
 			char recvTime[16];
 			char *bufTimePointer = buffer;
@@ -562,11 +563,13 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 			
 			timer = ((konec.tv_sec-rTime.tv_sec)*1000000 + (konec.tv_usec - rTime.tv_usec));
 			nodes[nodeNumber].rtts.push_back(timer/1000);
+
+			int dataPartSize = length - sizeof(iphdr);
 			
 			if(parameters.verbose)
 			{
 				cout << timeBuffer << "." << lrint(konec.tv_usec/10000)
-					<< " "<< length << " bytes from "
+					<< " "<< dataPartSize << " bytes from "
 					<< nodes[nodeNumber].node.c_str()
 					<< " (" << addrString << ")"
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
