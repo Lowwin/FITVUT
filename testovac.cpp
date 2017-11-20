@@ -65,6 +65,7 @@ typedef struct nodesStruct
 	vector<float> rtts;
 	float hourOk, hourSent;
 	float tOk, tSent;
+	float tLate, tLost;
 } nodesStruct;
 
 //Input nodes
@@ -358,18 +359,11 @@ u_short checksum(u_short *addr, int len)
 	register u_short answer;
 	register int sum = 0;
 
-	/*
-	 *  Our algorithm is simple, using a 32 bit accumulator (sum),
-	 *  we add sequential 16 bit words to it, and at the end, fold
-	 *  back all the carry bits from the top 16 bits into the lower
-	 *  16 bits.
-	 */
 	while( nleft > 1 )  {
 		sum += *w++;
 		nleft -= 2;
 	}
 
-	/* mop up an odd byte, if necessary */
 	if( nleft == 1 ) {
 		u_short	u = 0;
 
@@ -377,12 +371,9 @@ u_short checksum(u_short *addr, int len)
 		sum += u;
 	}
 
-	/*
-	 * add back carry outs from top 16 bits to low 16 bits
-	 */
-	sum = (sum >> 16) + (sum & 0xffff);	/* add hi 16 to low 16 */
-	sum += (sum >> 16);			/* add carry */
-	answer = ~sum;				/* truncate to 16 bits */
+	sum = (sum >> 16) + (sum & 0xffff);
+	sum += (sum >> 16);
+	answer = ~sum;
 	return (answer);
 }
 
@@ -416,7 +407,7 @@ std::string getStatistics(int nodeNumber)
 	return ret.str();
 }
 
-int tOutput(int nodeNumber)
+void tOutput(int nodeNumber)
 {
 	time_t curTimer;
 	struct timeval checkTimer;
@@ -451,7 +442,7 @@ int tOutput(int nodeNumber)
 	nodes[nodeNumber].tSent=0;
 }
 
-int hourOutput(int nodeNumber)
+void hourOutput(int nodeNumber)
 {
 	time_t curTimer;
 	struct timeval checkTimer;
@@ -510,7 +501,7 @@ int listenTo(paramStruct parameters, int nodeNumber)
 
 	if ((sock = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP)) == -1)
     {
-    	printf("dojebane\n");;
+    	cerr << "Error when creating listen socket" << endl;
     	return -1;
     }
 	setsockopt(sock, IPPROTO_IP, IP_TTL, (const char *)&ttl, sizeof(ttl));
@@ -527,9 +518,6 @@ int listenTo(paramStruct parameters, int nodeNumber)
 
 		ip = (iphdr *) buffer;
 		icmpRecv = (icmphdr *) (buffer + ip->ihl * 4);
-
-		
-		//cout << "Got time: " << rTime.tv_sec << "." << rTime.tv_usec <<endl;
 
 		if ((icmpRecv->type == ICMP_ECHOREPLY) && (icmpRecv->un.echo.id == pid))
 		{
@@ -560,9 +548,20 @@ int listenTo(paramStruct parameters, int nodeNumber)
 					<< " (" << addrString << ")"
 					<< " time=" << std::fixed << std::setprecision(2) << timer/1000 << " ms" << endl;
 			}
-
-			nodes[nodeNumber].hourOk++;
-			nodes[nodeNumber].tOk++;
+			
+			if((parameters.rtt != 0) && ((timer/1000) > parameters.rtt*2))
+			{
+				nodes[nodeNumber].tLost++;
+			}
+			else if((parameters.rtt != 0) && ((timer/1000) > parameters.rtt))
+			{
+				nodes[nodeNumber].hourOk++;
+				nodes[nodeNumber].tLate++;
+			}
+			else
+			{
+				nodes[nodeNumber].tOk++;
+			}
 		}
 	}
 }
@@ -622,46 +621,44 @@ int doPing(paramStruct parameters, int nodeNumber)
 
 	while (1)
 	{
-	timer =0;
-	char icmpBuffer[65000];
-	char *bufPointer = icmpBuffer;
-	char str[datasize-16];
-	const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
+		timer =0;
+		char icmpBuffer[65000];
+		char *bufPointer = icmpBuffer;
+		char str[datasize-16];
+		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
-    for (int i = 0; i < datasize; ++i)
-	{
-        str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
-    }
-	char timestampBuf[16];
-	gettimeofday((timeval*)timestampBuf,0);
-	gettimeofday(&send,0);
-	//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
-	icmp = (icmphdr *) icmpBuffer;
-	icmp->type = ICMP_ECHO;
-	icmp->code = 0;
-	icmp->un.echo.id = pid;
-	icmp->checksum = 0;
-    icmp->un.echo.sequence = 0;
+		for (int i = 0; i < datasize; ++i)
+		{
+			str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+		char timestampBuf[16];
+		gettimeofday((timeval*)timestampBuf,0);
+		gettimeofday(&send,0);
+		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
+		icmp = (icmphdr *) icmpBuffer;
+		icmp->type = ICMP_ECHO;
+		icmp->code = 0;
+		icmp->un.echo.id = pid;
+		icmp->checksum = 0;
+		icmp->un.echo.sequence = 0;
 
-	bufPointer+= sizeof(icmp);
-	for (int i=0; i<16;i++)
-	{
-		*bufPointer = timestampBuf[i];
-		bufPointer++;
-	}
-	for (int counter=0; counter<strlen(str);counter++)
-	{
-		*bufPointer = str[counter];
-		bufPointer++;
-	}
+		bufPointer+= sizeof(icmp);
+		for (int i=0; i<16;i++)
+		{
+			*bufPointer = timestampBuf[i];
+			bufPointer++;
+		}
+		for (int counter=0; counter<strlen(str);counter++)
+		{
+			*bufPointer = str[counter];
+			bufPointer++;
+		}
 
-    icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
-    if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
-        cout << "DID NOT SEND A THING." << endl;
-	nodes[nodeNumber].hourSent++;
-	nodes[nodeNumber].tSent++;
-
-    
+		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
+		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+			cout << "DID NOT SEND A THING." << endl;
+		nodes[nodeNumber].hourSent++;
+		nodes[nodeNumber].tSent++;
 
     	//Print statistics, if time is correct
     	gettimeofday(&checkTimer, 0);
@@ -669,16 +666,14 @@ int doPing(paramStruct parameters, int nodeNumber)
 		{
 			tOutput(nodeNumber); 
 			gettimeofday(&tOTimer,0);
-		}
-			
+		}	
 		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
 		{
 			hourOutput(nodeNumber); 
 			gettimeofday(&hourOTimer,0);
 		}
-		
-		if(((parameters.i*1000) - (timer/1000))>0)
-    		usleep((parameters.i*1000) - (timer/1000));
+    	
+		usleep(parameters.i*1000);
 	}
 	close(sock);
 	free(icmp);
