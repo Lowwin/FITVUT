@@ -820,7 +820,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 			*bufPointer = timestampBuf[i];
 			bufPointer++;
 		}
-		cout << "String " << str << " size "<< strlen(str);
+		cout << "String size "<< strlen(str) << endl;
 		for (int counter=0; counter<strlen(str);counter++)
 		{
 			*bufPointer = str[counter];
