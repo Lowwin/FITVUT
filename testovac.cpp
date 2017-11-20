@@ -591,6 +591,136 @@ int listenTo4(paramStruct parameters, int nodeNumber)
 	}
 }
 
+int doPing6(paramStruct parameters, int nodeNumber)
+{	
+	socklen_t size;
+	hostent *host;
+	icmp6_hdr *icmp, *icmpRecv;
+	iphdr *ip;
+	int sock, total, lenght;
+	unsigned int ttl = 255;
+	struct sockaddr_in6 sendSockAddr, receiveSockAddr;
+	char buffer[BUFSIZE];
+	timeval tv;
+	char *addrString;
+	in_addr addr;
+	unsigned short int pid = getpid(), p;
+	time_t curTimer;
+	char timeBuffer[26];
+	struct tm* tm_info;
+	struct timeval konec, send;
+	double timer;
+	int datasize = parameters.dataSize;
+
+	struct timeval hourOTimer, tOTimer, checkTimer;
+
+	nodes[nodeNumber].hourOk = 0;
+	nodes[nodeNumber].hourSent = 0;
+	nodes[nodeNumber].tOk = 0;
+	nodes[nodeNumber].tSent = 0;
+
+	gettimeofday(&hourOTimer,0);
+	gettimeofday(&tOTimer,0);
+
+	int sockfd;  
+    struct addrinfo hints, *servinfo, *p;
+    struct sockaddr_in *h;
+    int rv;
+ 
+    memset(&hints, 0, sizeof hints);
+    hints.ai_family = AF_INET6
+    hints.ai_socktype = SOCK_RAW;
+ 
+    if ( (rv = getaddrinfo( hostname , "http" , &hints , &servinfo)) != 0) 
+    {
+        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
+        return 1;
+    }
+ 
+    // loop through all the results and connect to the first we can
+    for(p = servinfo; p != NULL; p = p->ai_next) 
+    {
+        h = (struct sockaddr_in *) p->ai_addr;
+        strcpy(ip , inet_ntoa( h->sin_addr ) );
+    }
+	cout << "Ai " << h->ai_addr << " sin " << h->sin_addr;
+     
+    freeaddrinfo(servinfo);
+
+	if ((sock = socket(AF_INET6, SOCK_RAW, IPPROTO_ICMPV6)) == -1)
+	{
+    	cerr << "Unable to create socket." << endl;
+    	return -1;
+	}
+	
+	setsockopt(sock, IPPROTO_IPV6, IPV6_UNICAST_HOPS, (const char *)&ttl, sizeof(ttl));
+	
+	memset(&sendSockAddr, 0, sizeof(sendSockAddr));
+	sendSockAddr.sin6_family = AF_INET6;
+	sendSockAddr.sin6_port = 0;
+	inet_pton(AF_INET6, nodes[nodeNumber].node.c_str(),&(sendSockAddr.sin6_addr));
+
+	while (1)
+	{
+		timer =0;
+		char icmpBuffer[65000];
+		char *bufPointer = icmpBuffer;
+		char str[datasize-16];
+		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
+
+		for (int i = 0; i < datasize; ++i)
+		{
+			str[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+		}
+		char timestampBuf[16];
+		gettimeofday((timeval*)timestampBuf,0);
+		gettimeofday(&send,0);
+		//cout << "Send time: " << send.tv_sec << "." << send.tv_usec << endl;
+		icmp = (icmphdr *) icmpBuffer;
+		icmp->type = ICMP_ECHO;
+		icmp->code = 0;
+		icmp->un.echo.id = pid;
+		icmp->checksum = 0;
+		icmp->un.echo.sequence = 0;
+
+		bufPointer+= sizeof(icmp);
+		for (int i=0; i<16;i++)
+		{
+			*bufPointer = timestampBuf[i];
+			bufPointer++;
+		}
+		for (int counter=0; counter<strlen(str);counter++)
+		{
+			*bufPointer = str[counter];
+			bufPointer++;
+		}
+
+		icmp->checksum = checksum((u_short *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1);
+		if(sendto(sock,  (char *)icmpBuffer, sizeof(icmphdr)+sizeof(str)-1, 0, (sockaddr *)&sendSockAddr, sizeof(sockaddr)) <= 0)
+			cout << "DID NOT SEND A THING." << endl;
+		nodes[nodeNumber].hourSent++;
+		nodes[nodeNumber].tSent++;
+
+    	//Print statistics, if time is correct
+    	gettimeofday(&checkTimer, 0);
+		if ((checkTimer.tv_sec-tOTimer.tv_sec)>=parameters.t)
+		{
+			tOutput(nodeNumber); 
+			gettimeofday(&tOTimer,0);
+		}	
+		if((checkTimer.tv_sec-hourOTimer.tv_sec)>=5)
+		{
+			hourOutput(nodeNumber); 
+			gettimeofday(&hourOTimer,0);
+		}
+    	
+		usleep(parameters.i*1000);
+	}
+	close(sock);
+	free(icmp);
+	return 0;
+}
+
 /*
 **Sends packets to addresses
 */
