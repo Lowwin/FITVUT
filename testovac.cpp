@@ -1006,6 +1006,7 @@ int main(int argc, char *argv[])
 			if(res->ai_family == AF_INET)
 			{
 				threadsPing.push_back(std::thread(doPingUdp4, parameters, nodeCounter));
+				threadsPing.push_back(std::thread(listenToUdp4, parameters, nodeCounter));
 			}
 			else if(res->ai_family == AF_INET6)
 			{
