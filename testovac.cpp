@@ -795,6 +795,7 @@ int doPing4(paramStruct parameters, int nodeNumber)
 		timer =0;
 		char icmpBuffer[65000];
 		char *bufPointer = icmpBuffer;
+		cout << "Datasize: " << datasize << endl;
 		char str[datasize-16];
 		const char alphanum[] ="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789";
 
